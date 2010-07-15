@@ -1,0 +1,72 @@
+#!/usr/bin/env python
+
+import sys
+
+filenames = sys.argv[1:]
+N = len(filenames)
+
+files = []
+for filearg in filenames:
+    files.append(sorted(file(filearg).readlines()))
+
+subjects = set()
+lookup = [dict() for f in files]
+for i, f in enumerate(files):
+    for l in f:
+        fields = l.strip().split(" ")
+        subjects.add(fields[0])
+        lookup[i][fields[0]] = fields[1:]
+
+print "<html>"
+print "<head><style type='text/css'>"
+print """
+tr.match { background-color: lightgreen ; }
+tr.mismatch { background-color: pink ; }
+p.blue { background-color: lightblue ; }
+td.matchFalse { font-weight: bold ; }
+"""
+print "</style>"
+print "</head>"
+print """
+<script type='text/javascript'>
+
+function showhide() {
+   var rows=document.getElementsByTagName('tr');
+   for (var i = 0; i<rows.length; i++) {
+      if (rows[i].className=='match') {
+         rows[i].style.display = (rows[i].style.display=='none')?'table-row':'none';
+      }
+   }
+}
+</script>
+"""
+print "<body><p onclick='showhide()'>Green shows matches, red shows mismatches, bolded text shows mismatch locations.  Click this paragraph to hide or show matching lines.</p><table>"
+print "<tr><th>Subject</th>",
+print "".join(["<th colspan=3>File%i</th>" % (i+1) for i, f in enumerate(files)]),
+print "</tr>"
+print "<tr>",
+print "<td/>","".join(["".join(["<th>" + s + "</th>" for s in ["L", "P", "O"]]) for f in files]),
+print "<tr>"
+
+for subject in sorted(subjects):
+    row = '<tr class="%s"><td>' + subject + "</td>"
+    matchflag = "match"
+    for i in range(N):
+        if subject in lookup[i]:
+            vals = lookup[i][subject]
+            matches = [lookup[j][subject] for j in range(N)
+                       if i!=j and subject in lookup[j]]
+            for vi, entry in enumerate(vals):
+                if False in [m[vi] == entry for m in matches]:
+                    match = False
+                    matchflag = "mismatch"
+                else:
+                    match = True
+                row += "<td class='match%s'>%s</td>" % (match, entry)
+        else:
+            row += "<td colspan=3>missing</td>"
+            matchflag = "mismatch"
+    row += "</tr>"
+    print row % (matchflag)
+
+print "</table></body></html>"

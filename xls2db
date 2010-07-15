@@ -1,0 +1,12 @@
+#!/bin/bash
+
+xls2csv -q0 -c\| timetable20090520.xls |\
+cut -d \| -f 1,2,4,5,7,8,10,12,13,16,18,19 |\
+sed '/||||/,$d' |\
+awk -F\| 'BEGIN {OFS="|"} 
+           NR>1 {N=$9; 
+                 $9=1; 
+                 for (i=0; i<N; i++) {
+                    print; $8++}
+                }' |\
+cut -d\| -f 1-8,10-
