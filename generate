@@ -5,13 +5,20 @@ echo Run on `date` >> log
 
 # regenerate fulltable if a first argument is given
 if [ ! -z $1 ] ; then
+        [ -e fulltable.csv ] && mv fulltable.csv fulltable_prev.csv
     xls2csv $1 | sed '/,,,,/,$d' | ./shorten.sed > fulltable.csv && echo Regenerated fulltable.csv from $1 | tee -a log
-    # assuming the filename looks like timetable_2010_20090201.xls, parse out the pieces
+    echo --- This is an automatically generated message --- > mailbody.txt
+    echo Timetables have been regenerated from $1 >> mailbody.txt
+    echo The new tables can be accessed at http://skoll.up.ac.za/timetables >> mailbody.txt 
+    echo 'Differences between previous run (<) and current run (>):' >> mailbody.txt
+    diff fulltable.csv fulltable_prev.csv | tee -a mailbody.txt
+    nail -s "Timetable regenerated" -r "carl.sandrock@up.ac.za" -c "carl.sandrock@up.ac.za" "philip.devaal@up.ac.za" < mailbody.txt 
     echo $1 > datafilename
 else
     echo Assuming same data as last time.
 fi
 
+# assuming the filename looks like timetable_2010_20090201.xls, parse out the pieces
 IFS="_." read n datayear datadate rest < datafilename
 echo Timetable for $datayear given on $datadate
 
@@ -71,7 +78,7 @@ for dept in `cat genlist`; do
 
     # Generate language based counts
     for lang in A E; do
-	sed -n "/ $lang /s/ $lang//p" $countfile > $countfile.$lang
+        sed -n "/ $lang /s/ $lang//p" $countfile > $countfile.$lang
     done
 
     # pull subject counts for this group
@@ -85,31 +92,30 @@ for dept in `cat genlist`; do
     checkdifferences $countfile $dirname A E
     checkdifferences $countfile $dirname A yearbook
     checkdifferences $countfile $dirname E yearbook
-
+    
     index "</ol>"
-
-
+    
     # Run transforms
     index "<h3>Tables</h3>"
     index "<ol>"
     for style in transforms/*.xsl; do
-	stylename=`basename $style .xsl`
-	printname=${stylename//_/ } # replace underscores with spaces
-	index "<li>"
-	echo "  " creating $printname
-	if echo $stylename | grep -q tex; then
-	    sabcmd -x $xmlfile $style $dirname/$stylename.tex
-	    echo "   "- calling LaTeX
-	    pushd $dirname > /dev/null
-	    ans=`pdflatex -interaction=nonstopmode $stylename | grep "No pages"` && echo $ans for $stylename in $name
-	    popd > /dev/null
-	    printname=${printname% tex} # strip tex
-	    index '<a href="'$dirname/$stylename.pdf'">' $printname ' (pdf)</a>'
-	else
-	    sabcmd -x $xmlfile $style $dirname/$stylename.html
-	    index '<a href="'$dirname/$stylename.html'">' $printname '</a>'
-	fi
-	index "</li>"
+        stylename=`basename $style .xsl`
+        printname=${stylename//_/ } # replace underscores with spaces
+        index "<li>"
+        echo "  " creating $printname
+        if echo $stylename | grep -q tex; then
+            sabcmd -x $xmlfile $style $dirname/$stylename.tex
+            echo "   "- calling LaTeX
+            pushd $dirname > /dev/null
+            ans=`pdflatex -interaction=nonstopmode $stylename | grep "No pages"` && echo $ans for $stylename in $name
+            popd > /dev/null
+            printname=${printname% tex} # strip tex
+            index '<a href="'$dirname/$stylename.pdf'">' $printname ' (pdf)</a>'
+        else
+            sabcmd -x $xmlfile $style $dirname/$stylename.html
+            index '<a href="'$dirname/$stylename.html'">' $printname '</a>'
+        fi
+        index "</li>"
     done
     index "</ol>"
     index "</div>"
