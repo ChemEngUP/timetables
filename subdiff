@@ -15,7 +15,9 @@ for i, f in enumerate(files):
     for l in f:
         fields = l.strip().split(" ")
         subjects.add(fields[0])
-        lookup[i][fields[0]] = fields[1:]
+        numbers = map(int, fields[1:])
+        numbers.append(sum(numbers))
+        lookup[i][fields[0]] = numbers
 
 print "<html>"
 print "<head><style type='text/css'>"
@@ -40,12 +42,15 @@ function showhide() {
 }
 </script>
 """
-print "<body><p onclick='showhide()'>Green shows matches, red shows mismatches, bolded text shows mismatch locations.  Click this paragraph to hide or show matching lines.</p><table>"
+print """<body>
+<p onclick='showhide()'>Green shows matches, red shows mismatches, bolded text shows mismatch locations.  Click this paragraph to hide or show matching lines.</p>
+<p> L: Lectures, P: Practicals (Tutorials are counted as Practicals), O: oefenklasse , t: total lectures </p>
+<table>"""
 print "<tr><th>Subject</th>",
-print "".join(["<th colspan=3>File%i</th>" % (i+1) for i, f in enumerate(files)]),
+print "".join(["<th colspan=4>File%i</th>" % (i+1) for i, f in enumerate(files)]),
 print "</tr>"
 print "<tr>",
-print "<td/>","".join(["".join(["<th>" + s + "</th>" for s in ["L", "P", "O"]]) for f in files]),
+print "<td/>","".join(["".join(["<th>" + s + "</th>" for s in ["L", "P", "O", "t"]]) for f in files]),
 print "<tr>"
 
 for subject in sorted(subjects):
@@ -64,7 +69,7 @@ for subject in sorted(subjects):
                     match = True
                 row += "<td class='match%s'>%s</td>" % (match, entry)
         else:
-            row += "<td colspan=3>missing</td>"
+            row += "<td colspan=4>missing</td>"
             matchflag = "mismatch"
     row += "</tr>"
     print row % (matchflag)

@@ -26,7 +26,7 @@ def usage():
     """Print some descriptive text about the usage of this script"""
     print """
 Usage: ttable -[hqv] csvfile [-o outputfile] [-i ignorefile] [-s subjectsfile] [-c countfile] [-y year]
-Options:
+Options
    -h, --help       Prints this message
    -q, --quiet      Supresses most of the output
    -v, --verbose    Prints more information
@@ -191,19 +191,26 @@ def parseignorefile(filename):
     igfile.close()
     return ignore
 
+def conditiontime(t):
+    """ Adjust times of the form 9:30 to 09:30 """
+    if len(t) != 5:
+        return "0" + t
+    else:
+        return t
+
 def readcsv(incsv, ignore, wanted, options):
     entries = [];
     
     headings = incsv.next()
     for record in incsv:
-        if len(record) < 5:
+        if len(record) < 5 or all(len(i)==0 for i in record):
             continue
         # Use heading names for a dict in the listings
         if "debug" in options: print record
         t = dict(zip(headings, record))
         if "debug" in options: print t
         sub = t["ModuleName"].replace(' ', '')
-        ttime = t["Time"].split('-')
+        ttime = map(conditiontime, t["Time"].split('-'))
         if len(ttime) < 2:
             print record, t["Time"], ttime
         classtype = t["YearPhase"] # quarter/semester/year
@@ -358,7 +365,11 @@ def countentries(entries):
         if l == "B":
             l = ["A", "E"]
         for lang in listify(l):
-            key = (entry["realname"], entry["session"][0], lang)
+            type = entry["session"][0]
+            if type == "T":
+                type = "P"
+            assert type in ["L", "P", "O"], "Unknown lecture type encountered"
+            key = (entry["realname"], type, lang)
             n = nperiods(entry["starttime"], entry["endtime"])
             if key in counts:
                 counts[key] += n
