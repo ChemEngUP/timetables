@@ -61,7 +61,9 @@ index "<html>"
 cat indexscript >> $indexfile
 index "<body onload=hideall()>"
 index "<h1>Timetables for $datayear</h1>"
-index "<p>These timetables were automatically generated on " `date` ".  The original datafile was sent on $datadate. Click on the headings to expand the options.  Note that the individual timetables per lecturer are only valid for Chemical Engineering</p>"
+index "<p>These timetables were automatically generated on " `date` ".</p>"
+index "<p>The original datafile was sent on $datadate. Note that these timetables are only trustworthy near the date of the original datafile for departments other than Chemical Engineering.</p>"
+index "<p>Click on the headings to expand the options.</p>"
 
 # Make target directory
 for dept in `cat genlist`; do 
@@ -135,4 +137,4 @@ for filename in $pdffiles; do
 done
 
 index "</body></html>"
-sed -i 's,output/,,g' $indexfile
+gsed -i 's,output/,,g' $indexfile
