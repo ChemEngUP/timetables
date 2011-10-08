@@ -116,7 +116,7 @@
        var subs=document.getElementsByTagName('div');
        for (var i = 0; i<subs.length; i++) { 
            if (subs[i].className=='subject' & subs[i].innerHTML.replace(/[()]/g,'')==subject) {
-	      subs[i].style.background = (subs[i].style.background.substring(4,0)=='pink')?'':'pink';
+	      subs[i].style.background = (subs[i].style.background.search('pink'))>0?'':'pink';
            }
        }
     }
