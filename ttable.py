@@ -11,6 +11,7 @@ import os.path
 import csv
 
 ver = "1.1"
+longdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
 day_afr = ['Ma', 'Di', 'Wo', 'Do', 'Vr']
 day_eng = ['Mo', 'Tu', 'We', 'Th', 'Fr']
 day_both = ["/".join(i) for i in zip(day_afr, day_eng)]
@@ -198,21 +199,28 @@ def conditiontime(t):
     else:
         return t
 
+def parseday(daystr):
+    """ Attempt to parse the day string input to a shortened date string """
+    if daystr in longdays:
+        i = longdays.index(daystr)
+    elif daystr in day_both:
+        i = dayboth.index(daystr)
+    else:
+        raise Exception
+    return day_both[i]
+
 def readcsv(incsv, ignore, wanted, options):
     entries = [];
-    
-    headings = incsv.next()
-    for record in incsv:
-        if len(record) < 5 or all(len(i)==0 for i in record):
+    neededfields = set(("ModuleName", "YearPhase", "ENGcode", "Language", "Activity", "Day", "Venue"))
+    for t in incsv:
+        if len(t) < 5 or all(len(i)==0 for i in t) or any(t[k] is None for k in neededfields):
             continue
         # Use heading names for a dict in the listings
-        if "debug" in options: print record
-        t = dict(zip(headings, record))
-        if "debug" in options: print t
+        if 'debug' in options: print t
         sub = t["ModuleName"].replace(' ', '')
         ttime = map(conditiontime, t["Time"].split('-'))
         if len(ttime) < 2:
-            print record, t["Time"], ttime
+            continue
         classtype = t["YearPhase"] # quarter/semester/year
         realname = sub
         if classtype.startswith('K'): # quarter
@@ -225,22 +233,27 @@ def readcsv(incsv, ignore, wanted, options):
             semester = [1, 2]
             
         for sem in listify(semester):
-            entry = { 'module': sub,
-                      'semester': "S%i" % sem,
-                      'language': t["Language"],
-                      'session': t["Activity"],
-                      'day': t["Day"],
-                      'starttime': ttime[0],
-                      'endtime': ttime[1],
-                      'venue': t["Venue"],
-                      'group': t["ENGcode"][0],
-                      'year': int(t["ENGcode"][1]),
-                      'realname': realname }
-            if "debug" in options: print entry
-            if wantmatch(entry, wanted) and not ignorematch(entry, ignore):
-                entries.append(entry)
-            if "debug" in options: print "matches", wanted, "but not", ignore
-        if "debug" in options: print entries
+            engcodes = t["ENGcode"].replace(" ", "")
+            groups = engcodes[0::2]
+            years = map(int, engcodes[1::2])
+            assert len(groups)==len(years), "Problem parsing ENGcode"
+            for group, year in zip(groups, years):
+                entry = { 'module': sub,
+                          'semester': "S%i" % sem,
+                          'language': t["Language"],
+                          'session': t["Activity"],
+                          'day': parseday(t["Day"]),
+                          'starttime': ttime[0],
+                          'endtime': ttime[1],
+                          'venue': t["Venue"],
+                          'group': group,
+                          'year': year,
+                          'realname': realname }
+                if "debug" in options: print entry
+                if wantmatch(entry, wanted) and not ignorematch(entry, ignore):
+                    entries.append(entry)
+                if "debug" in options: print "matches", wanted, "but not", ignore
+    if "debug" in options: print entries
 
     return entries
 
@@ -387,7 +400,7 @@ def main(argv):
     
     wanted = {"group": options["group"]}
 
-    infile = csv.reader(sys.stdin)
+    infile = csv.DictReader(sys.stdin)
 
     entries = readcsv(infile, ignore, wanted, options)
     mergedentries = mergetimes(entries)
