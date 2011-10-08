@@ -1,4 +1,4 @@
-#!/bin/sed -f
+#!/usr/bin/env sed -f
 s,Rek/Comp,Comp,g
 s,Regsgebou/Law,Law,g
 s,Ing/Eng,Eng,g
@@ -19,7 +19,7 @@ s,VD Bijlsaal/VD,VD,g
 s,Theronsaal/Theron,Theron,g
 s,EB/EMB,EMB,g
 s,Build Sc/Boukunde,Boukunde,g
-s,Raadpl/.*Consult [Dd]ept,TBA,g
+s,Raadpl.*/.*Consult [Dd]ept,TBA,g
 s,Raadpleeg [Dd]ept/.*Consult [Dd]ept,TBA,g
 s/TBA,.*TBA/TBA/g
 s,Geografie/Geography,Geography,g
