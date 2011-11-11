@@ -219,8 +219,11 @@ def readcsv(incsv, ignore, wanted, options):
         if 'debug' in options: print t
         sub = t["ModuleName"].replace(' ', '')
         ttime = map(conditiontime, t["Time"].split('-'))
-        if len(ttime) < 2:
+        if len(ttime) != 2:
             continue
+        starttime, endtime = ttime
+        if endtime.endswith('30'):
+            endtime = endtime[:-2] + '20'
         classtype = t["YearPhase"] # quarter/semester/year
         realname = sub
         if classtype.startswith('K'): # quarter
@@ -236,7 +239,8 @@ def readcsv(incsv, ignore, wanted, options):
             engcodes = t["ENGcode"].replace(" ", "")
             groups = engcodes[0::2]
             years = map(int, engcodes[1::2])
-            assert len(groups)==len(years), "Problem parsing ENGcode"
+            assert len(groups)==len(years), "Problem parsing ENGcode" + engcodes
+            if endtime
             for group, year in zip(groups, years):
                 entry = { 'module': sub,
                           'semester': "S%i" % sem,
