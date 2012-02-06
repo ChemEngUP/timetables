@@ -10,7 +10,7 @@ import logging
 import os.path
 
 parser = argparse.ArgumentParser(description="Extract certain named columns from a CSV file")
-parser.add_argument('infile', default=sys.stdin, 
+parser.add_argument('infile', default='-', nargs="?",
                     type=argparse.FileType('r'))
 parser.add_argument('--outfile', '-o', default=sys.stdout, 
                     type=argparse.FileType('w'))
