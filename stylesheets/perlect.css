@@ -1,0 +1,32 @@
+body { font-family: Arial, sans-serif; 
+       font-size: 10pt; 
+       text-align: center; }
+
+td { text-align: center; }
+
+h1 { text-align: center; page-break-before: always;}
+h2 { text-align: center; }
+
+table { empty-cells: show; 
+        font-size: inherit; 
+        margin-left: auto; 
+        margin-right: auto; }
+
+thead { border-bottom: solid 1px; background-color: #f0f0f0; }
+
+tr.period2, 
+tr.period4,
+tr.period6,
+tr.period8,
+tr.period10 { background-color: #eee; }
+
+div.venue { font-size: 80%; }
+
+colgroup { border: solid 1px; }
+
+table.year { 
+   cellspacing: 2px;
+   cellpadding: 2px;
+   border: solid 2px; 
+   border-spacing: 2px 2px;
+   border-collapse: collapse; }

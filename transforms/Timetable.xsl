@@ -56,6 +56,7 @@
   <xsl:param name="startperiod" select="1" />
   <xsl:param name="endperiod" select="10" />
   <h2><xsl:value-of select="/timetable/geninfo/@dept"/> - Semester <xsl:value-of select="./@number"/> of <xsl:value-of select="/timetable/@year"/> (generated on <xsl:value-of select="/timetable/geninfo/@date"/> )</h2>
+    <p>Click here to show or hide years:<button onclick="yearvis(1)">1</button> <button onclick="yearvis(2)">2</button> <button onclick="yearvis(3)">3</button> <button onclick="yearvis(4)">4</button> </p>
   <table class="year">
     <colgroup /><colgroup />
     <colgroup span="2" class="day"/>
@@ -106,9 +107,19 @@
        var subs=document.getElementsByTagName('div');
        for (var i = 0; i<subs.length; i++) { 
            if (subs[i].className=='subject' & subs[i].innerHTML.replace(/[()]/g,'')==subject) {
-	      subs[i].style.background = (subs[i].style.background.search('pink'))>0?'':'pink';
+	      var p = subs[i].parentNode;
+              p.className = /high$/.test(p.className)?p.className.substr(0,3):(p.className + 'high');
            }
        }
+    }
+
+    function yearvis(year) {
+	var rows=document.getElementsByTagName('tr');
+	for (var i=0; i<rows.length; i++) {
+	    if (rows[i].className==('year'+year)) {
+		rows[i].style.display = rows[i].style.display=='none'?'':'none';
+	    }
+	}
     }
 //-->
 //]]>

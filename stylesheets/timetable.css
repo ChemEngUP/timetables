@@ -1,0 +1,35 @@
+body { font-family: Arial, sans-serif; 
+       font-size: 7pt;  line-height: 100%; }
+
+td { text-align: center; }
+
+h1 { text-align: center; }
+h2 { text-align: center; }
+
+table { empty-cells: show; 
+        width: 100%; 
+        font-size: inherit; }
+
+tbody { border: solid 2px; }
+thead { border-bottom: solid 2px; background-color: #f0f0f0; }
+
+tr.year2, tr.year4 { background-color: #eee; }
+
+td.afr, td.eng { width: 10%; }
+
+td.afrhigh, td.enghigh, td.bothigh { background-color: pink; }
+
+/*td.both, td.afr, td.eng, td.lect { border: solid 1px; }*/
+td.eng, td.lect { border-left: solid 1px; }
+
+div.venue { font-size: 70%; }
+
+colgroup.day { border: solid 2px; }
+
+table.year { 
+   cellspacing: 0;
+   cellpadding: 0;
+   border: solid 3px; 
+   border-spacing: 0px 0px;
+   border-collapse: collapse; 
+   page-break-after: always; }
