@@ -204,9 +204,9 @@ def parseday(daystr):
     if daystr in longdays:
         i = longdays.index(daystr)
     elif daystr in day_both:
-        i = dayboth.index(daystr)
+        i = day_both.index(daystr)
     else:
-        raise Exception
+        raise ValueError
     return day_both[i]
 
 def readcsv(incsv, ignore, wanted, options):
@@ -236,12 +236,12 @@ def readcsv(incsv, ignore, wanted, options):
             semester = [1, 2]
             
         for sem in listify(semester):
-            engcodes = t["ENGcode"].replace(" ", "")
+            #TODO: Make this cleanup more generic
+            engcodes = t["ENGcode"].replace(" ", "").replace("(", "").replace(")","").replace(",", "")
             groups = engcodes[0::2]
             years = map(int, engcodes[1::2])
-            assert len(groups)==len(years), "Problem parsing ENGcode" + engcodes
-            if endtime
-            for group, year in zip(groups, years):
+            assert len(groups)==len(years), "Problem parsing ENGcode " + engcodes
+            for group, year in set(zip(groups, years)):
                 entry = { 'module': sub,
                           'semester': "S%i" % sem,
                           'language': t["Language"],
