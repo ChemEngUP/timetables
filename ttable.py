@@ -382,11 +382,11 @@ def countentries(entries):
         if l == "B":
             l = ["A", "E"]
         for lang in listify(l):
-            type = entry["session"][0]
-            if type == "T":
-                type = "P"
-            assert type in ["L", "P", "O"], "Unknown lecture type encountered"
-            key = (entry["realname"], type, lang)
+            ltype = entry["session"][0]
+            if ltype == "T":
+                ltype = "P"
+            assert ltype in ["L", "P", "O"], "Unknown lecture type encountered"
+            key = (entry["realname"], ltype, lang)
             n = nperiods(entry["starttime"], entry["endtime"])
             if key in counts:
                 counts[key] += n
