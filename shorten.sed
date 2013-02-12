@@ -1,4 +1,5 @@
 #!/usr/bin/env sed -f
+#!/bin/sed -f
 s,Rek/Comp,Comp,g
 s,Regsgebou/Law,Law,g
 s,Ing/Eng,Eng,g
@@ -26,4 +27,5 @@ s,Geografie/Geography,Geography,g
 s,Min Wet/Science,Min Sci,g
 s,Netwerke/Networks,Networks,g
 s,Eeufees/Centenary,Centenary,g
-s/ & /, /g
+s/&amp;/and/g
+s/ *& */ and /g
