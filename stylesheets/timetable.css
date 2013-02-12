@@ -17,8 +17,17 @@ tr.year2, tr.year4 { background-color: #eee; }
 
 td.afr, td.eng { width: 10%; }
 
-td.afrhigh, td.enghigh, td.bothigh { background-color: pink; }
-
+td.afrhigh0, td.enghigh0, td.bothigh0 { background-color: #ff6; }
+td.afrhigh1, td.enghigh1, td.bothigh1 { background-color: #aff; }
+td.afrhigh2, td.enghigh2, td.bothigh2 { background-color: #9f9; }
+td.afrhigh3, td.enghigh3, td.bothigh3 { background-color: #f99; }
+td.afrhigh4, td.enghigh4, td.bothigh4 { background-color: #f6f; }
+td.afrhigh5, td.enghigh5, td.bothigh5 { background-color: #800; }
+td.afrhigh6, td.enghigh6, td.bothigh6 { background-color: #0a0; }
+td.afrhigh7, td.enghigh7, td.bothigh7 { background-color: #860; }
+td.afrhigh8, td.enghigh8, td.bothigh8 { background-color: #049; }
+td.afrhigh9, td.enghigh9, td.bothigh9 { background-color: #909; }
+					
 /*td.both, td.afr, td.eng, td.lect { border: solid 1px; }*/
 td.eng, td.lect { border-left: solid 1px; }
 
