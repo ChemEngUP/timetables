@@ -93,6 +93,14 @@
   <script type="text/javascript">
 //<![CDATA[
 <!--//
+    function strhash(str) {
+	var hash=0;
+	for (var i = 0; i<str.length; i++) {
+	    hash += str.charCodeAt(i);
+	}
+	return hash % 10;
+    }
+
     function armhighlights() {
        var divs=document.getElementsByTagName('div');
        for (var i = 0; i<divs.length; i++) {
@@ -108,7 +116,7 @@
        for (var i = 0; i<subs.length; i++) { 
            if (subs[i].className=='subject' & subs[i].innerHTML.replace(/[()]/g,'')==subject) {
 	      var p = subs[i].parentNode;
-              p.className = /high$/.test(p.className)?p.className.substr(0,3):(p.className + 'high');
+              p.className = /high.$/.test(p.className)?p.className.substr(0,3):(p.className + 'high' + strhash(subject));
            }
        }
     }
