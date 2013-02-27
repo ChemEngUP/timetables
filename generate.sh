@@ -3,15 +3,21 @@
 # Todo: Use rubber or similar tool for latex builds
 echo Run on `date` >> log
 
+if test `uname` = Darwin; then
+	echo "Running on Mac"
+	SED=gsed
+else
+	echo "Running on Linux"
+	SED=sed
+fi
+
 # regenerate fulltable if a first argument is given
 if [ ! -z $1 ] ; then
     [ -e fulltable.csv ] && mv fulltable.csv fulltable_prev.csv
-    xls2csv "$1" | ./shorten.sed | ./extractcolumns.py --headerfile headers.txt --sort -o fulltable.csv && echo Regenerated fulltable.csv from $1 | tee -a log
-    echo --- This is an automatically generated message --- > mailbody.txt
-    echo Timetables have been regenerated from $1 >> mailbody.txt
-    echo The new tables can be accessed at http://skoll.up.ac.za/timetables >> mailbody.txt 
-    echo 'Differences between previous run (>) and current run (<):' >> mailbody.txt
+    xls2csv "$1" | $SED -f shorten.sed | ./extractcolumns.py --headerfile headers.txt --sort -o fulltable.csv && echo Regenerated fulltable.csv from $1 | tee -a log
+    cp mailhead.txt mailbody.txt
     diff fulltable.csv fulltable_prev.csv | tee -a mailbody.txt
+    dos2unix mailbody.txt
     # send mail about regeneration if a second argument is given
     [ ! -z $2 ] && nail -s "Timetable regenerated" -r "carl.sandrock@up.ac.za" -c "carl.sandrock@up.ac.za" "philip.devaal@up.ac.za" < mailbody.txt 
     echo $1 > datafilename
@@ -132,4 +138,4 @@ for filename in $pdffiles; do
 done
 
 index "</body></html>"
-sed -i 's,output/,,g' $indexfile
+$SED -i 's,output/,,g' $indexfile
