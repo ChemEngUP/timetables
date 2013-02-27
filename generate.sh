@@ -66,6 +66,8 @@ index "<p>These timetables were automatically generated on " `date` ".</p>"
 index "<p>The original datafile was sent on $datadate. Note that these timetables are only trustworthy near the date of the original datafile for departments other than Chemical Engineering.</p>"
 index "<p>Click on the headings to expand the options.</p>"
 
+awk '{print $1; print tolower($1)}' departmentlist > genlist
+
 # Make target directory
 for dept in `cat genlist`; do 
     name=`grep "^$dept" departmentlist_expanded | cut -f 3`
@@ -139,3 +141,6 @@ done
 
 index "</body></html>"
 $SED -i 's,output/,,g' $indexfile
+
+echo "Deleting temporary files"
+rm genlist departmentlist_expanded

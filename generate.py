@@ -1,4 +1,4 @@
-#!/usr/env/python
+#!/usr/bin/env python
 
 import sys
 import datetime
@@ -13,8 +13,14 @@ import subprocess
 from email.mime.text import MIMEText
 import smtplib
 # TODO: Use argparse for argument handling
-#import argparse
-#parser = pargparse.ArgumentParser(description='Generate timetables')
+
+import argparse
+parser = argparse.ArgumentParser(description='Generate timetables')
+parser.add_argument('--sendmail', help='Send a notification e-mail', action="store_true", default=False)
+parser.add_argument('filename', nargs="?", help='XLS file to parse for timetable')
+
+args = parser.parse_args()
+
 
 logfile = file('log', 'w')
 
@@ -31,32 +37,33 @@ datestr = str(datetime.datetime.now())
 log("Run on" + datestr)
 
 
-# regenerate fulltable if a first argument is given
-if len(sys.argv) > 1:
+# regenerate fulltable if filename specified
+if args.filename:
     if os.path.exists('fulltable.csv'):
         shutil.move('fulltable.csv', 'fulltable_prev.csv')
 
-    inputfile = sys.argv[1]
-    system('xls2csv ' + inputfile + ' | sed -f shorten.sed | ./extractcolumns.py --headerfile headers.txt --sort -o fulltable.csv')
-    log("Regenerated fulltable from " + sys.argv[1], echo=True)
+    system('xls2csv ' + args.filename[0] + ' | sed -f shorten.sed | ./extractcolumns.py --headerfile headers.txt --sort -o fulltable.csv')
+    log("Regenerated fulltable from " + args.filename[0], echo=True)
+    open('datafilename', 'w').write(args.filename[0])
+else:
+    print "Assuming same data as last time or other source of data"
+
+if args.sendmail:
     shutil.copy('mailhead.txt', 'mailbody.txt')
     system('diff fulltable.csv fulltable_prev.csv | tee -a mailbody.txt')
     msg = MIMEText(open('mailbody.txt').read())
     msg['Subject'] = "Timetable regenerated"
     msg['From'] = "carl.sandrock@up.ac.za"
-    msg['To'] = "carl.sandrock@up.ac.za"
+    msg['To'] = "carl.sandrock@up.ac.za,philip.devaal@up.ac.za"
 
     s = smtplib.SMTP('localhost')
-    s.sendmail(msg['From'], msg['To'], msg.as_string())
+    s.sendmail(msg['From'], msg['To'].split(','), msg.as_string())
     s.quit()
 
-    open('datafilename', 'w').write(inputfile)
-else:
-    print "Assuming same data as last time"
 
 datafilename = open('datafilename').read().strip()
 
-outputdir="newoutput"
+outputdir="output"
 subdiff="./subdiff"
 
 # assuming the filename looks like timetable_2010_20090201.xls, parse out the pieces
