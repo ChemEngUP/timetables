@@ -95,10 +95,10 @@ def processoptions(argv):
     options.setdefault("deptident", "Chemical Engineering")
     options.setdefault("group", "C")
     options.setdefault("year", time.strftime("%Y"))
-    
+
     if "outfile" in options:
         options.setdefault("countfile", options["outfile"] + '.count')
-    
+
     if "version" in options:
         version()
         sys.exit(0)
@@ -206,6 +206,7 @@ def parseday(daystr):
     elif daystr in day_both:
         i = day_both.index(daystr)
     else:
+        print 'Error parsing day string', daystr
         raise ValueError
     return day_both[i]
 
@@ -234,7 +235,7 @@ def readcsv(incsv, ignore, wanted, options):
             semester = int(classtype[1])
         elif classtype.startswith('J'):
             semester = [1, 2]
-            
+
         for sem in listify(semester):
             #TODO: Make this cleanup more generic
             engcodes = t["ENGcode"].replace(" ", "").replace("(", "").replace(")","").replace(",", "")
@@ -267,20 +268,21 @@ def mergetimes(entries):
     # FIXME: At the moment it is assumed that only adjacent items will
     # have overlapping times
     mergedentries = []
-    current = entries[0];
-    matchkeys = ['module', 'semester', 'language', 'day', \
-             'venue', 'group', 'year']
+    if len(entries) > 0:
+        current = entries[0];
+        matchkeys = ['module', 'semester', 'language', 'day', \
+                 'venue', 'group', 'year']
 
-    for entry in entries:
-        if all(entry[key] == current[key] for key in matchkeys) \
-           and entry['starttime'] == current['endtime']:
-            # contiguous period
-            current['endtime'] = entry['endtime']
-       
-        else:
-            mergedentries.append(current)
-            current = entry
+        for entry in entries:
+            if all(entry[key] == current[key] for key in matchkeys) \
+               and entry['starttime'] == current['endtime']:
+                # contiguous period
+                current['endtime'] = entry['endtime']
 
+            else:
+                mergedentries.append(current)
+                current = entry
+                
     return mergedentries
 
 def mergevenues(entries):
@@ -352,14 +354,14 @@ def processentries(entries, mergedentries, responsible, personnel, options):
                            and entry["day"] == day]
                     if len(matchingmodules) > 0:
                         # merge same module for both languages
-                        if "languagemerge" in options: 
-                            if len(matchingmodules) == 2: 
+                        if "languagemerge" in options:
+                            if len(matchingmodules) == 2:
                                 if all(matchingmodules[0][key] \
                                        == matchingmodules[1][key] \
                                        for key in ["module", "venue"]):
                                    matchingmodules = [matchingmodules[0]]
                                    matchingmodules[0]["language"] = "B"
-                        
+
                         for entry in mergevenues(matchingmodules[:]):
                             moduleElement = outputdoc.createElement("module")
                             moduleElement.setAttribute("venue", entry["venue"])
@@ -393,15 +395,15 @@ def countentries(entries):
             else:
                 counts[key] = n
     return counts
-    
+
 def main(argv):
     options = processoptions(argv)
     checkoptions(options)
-    
+
     [responsible, personnel] = parsesubjectsfile(options["subjectsfile"])
     ignore = parseignorefile(options["ignorefile"])
     if "verbose" in options: print ignore
-    
+
     wanted = {"group": options["group"]}
 
     infile = csv.DictReader(sys.stdin)
@@ -422,7 +424,7 @@ def main(argv):
         subs = set([key[0] for key in counts])
         for sub in sorted(subs):
             for lang in ["A", "E"]:
-                print >> countfile, sub, lang, 
+                print >> countfile, sub, lang,
                 for act in ["L", "P", "O"]:
                     key = (sub, act, lang)
                     if key in counts:
@@ -436,4 +438,4 @@ if __name__ == "__main__":
     main(sys.argv[1:])
 
 
-           
+
