@@ -12,8 +12,9 @@ import glob
 import subprocess
 from email.mime.text import MIMEText
 import smtplib
-# TODO: Use argparse for argument handling
+import difflib
 
+# TODO: Use argparse for argument handling
 import argparse
 parser = argparse.ArgumentParser(description='Generate timetables')
 parser.add_argument('--sendmail', help='Send a notification e-mail', action="store_true", default=False)
@@ -50,11 +51,16 @@ else:
 
 if args.sendmail:
     shutil.copy('mailhead.txt', 'mailbody.txt')
+    differ = difflib.HtmlDiff()
+    diffs = differ.make_table(open('fulltable.csv'), open('fulltable_prev.csv'), 
+                              "Current version", "Previous version", 
+                              context=True, numlines=1)
+    print >> open('diffs.html', 'a'), diffs
     system('diff fulltable.csv fulltable_prev.csv | tee -a mailbody.txt')
     msg = MIMEText(open('mailbody.txt').read())
     msg['Subject'] = "Timetable regenerated"
     msg['From'] = "carl.sandrock@up.ac.za"
-    msg['To'] = "carl.sandrock@up.ac.za,philip.devaal@up.ac.za"
+    msg['To'] = ','.join(i.strip() for i in open('maillist') if not i.startswith('#'))
 
     s = smtplib.SMTP('localhost')
     s.sendmail(msg['From'], msg['To'].split(','), msg.as_string())
