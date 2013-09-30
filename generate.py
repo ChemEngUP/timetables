@@ -43,9 +43,9 @@ if args.filename:
     if os.path.exists('fulltable.csv'):
         shutil.move('fulltable.csv', 'fulltable_prev.csv')
 
-    system('xls2csv ' + args.filename[0] + ' | sed -f shorten.sed | ./extractcolumns.py --headerfile headers.txt --sort -o fulltable.csv')
-    log("Regenerated fulltable from " + args.filename[0], echo=True)
-    open('datafilename', 'w').write(args.filename[0])
+    system('xls2csv ' + args.filename + ' | sed -f shorten.sed | ./extractcolumns.py --headerfile headers.txt --sort -o fulltable.csv')
+    log("Regenerated fulltable from " + args.filename, echo=True)
+    open('datafilename', 'w').write(args.filename)
 else:
     print "Assuming same data as last time or other source of data"
 
