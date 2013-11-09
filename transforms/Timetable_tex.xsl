@@ -17,7 +17,7 @@
     \narrowbox{<xsl:apply-templates select="module[./@language='A']" />} &amp; \narrowbox{<xsl:apply-templates select="module[./@language='E']" />} </xsl:otherwise> </xsl:choose> <xsl:if test="not(position()=last())">&amp;</xsl:if>
 </xsl:template>
 
-<xsl:template match="module"> \subject{<xsl:if test="./@type='P' or ./@type='T'">(</xsl:if> <xsl:value-of select="./@name" /> <xsl:if test="./@type='P' or ./@type='T'">)</xsl:if>} \\ \venue{<xsl:value-of select="./@venue"/>} <xsl:if test="not(position()=last())">\\</xsl:if> </xsl:template>
+<xsl:template match="module"> \subject{<xsl:if test="./@type='P' or ./@type='T' or ./@type='O'">(</xsl:if> <xsl:value-of select="./@name" /> <xsl:if test="./@type='P' or ./@type='T' or ./@type='O'">)</xsl:if>} \\ \venue{<xsl:value-of select="./@venue"/>} <xsl:if test="not(position()=last())">\\</xsl:if> </xsl:template>
 
 <xsl:template match="semester">
   <xsl:param name="startperiod" select="1" />

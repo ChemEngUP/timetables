@@ -45,9 +45,9 @@
 
 <xsl:template match="module">
     <div class="subject">
-      <xsl:if test="./@type='P' or ./@type='T'">(</xsl:if>
+      <xsl:if test="./@type='P' or ./@type='T' or ./@type='O'">(</xsl:if>
       <xsl:value-of select="./@name" />
-      <xsl:if test="./@type='P' or ./@type='T'">)</xsl:if>
+      <xsl:if test="./@type='P' or ./@type='T' or ./@type='O'">)</xsl:if>
     </div>
     <div class="venue"><xsl:value-of select="./@venue"/></div>
 </xsl:template>
