@@ -10,14 +10,18 @@ import re
 import itertools
 import glob
 import subprocess
-from email.mime.text import MIMEText
+#from email.mime.text import MIMEText
+import email
 import smtplib
 import difflib
 
 # TODO: Use argparse for argument handling
 import argparse
 parser = argparse.ArgumentParser(description='Generate timetables')
-parser.add_argument('--sendmail', help='Send a notification e-mail', action="store_true", default=False)
+parser.add_argument('--sendmail', help='Send a notification e-mail', 
+                    action="store_true", default=False)
+parser.add_argument('--debug', help='Print commands as they are written', 
+                    action="store_true", default=False)
 parser.add_argument('filename', nargs="?", help='XLS file to parse for timetable')
 
 args = parser.parse_args()
@@ -31,7 +35,8 @@ def log(string, echo=False):
     print >> logfile, string
 
 def system(string):
-    #print string
+    if args.debug: 
+        print string
     os.system(string)
 
 datestr = str(datetime.datetime.now())
@@ -43,24 +48,30 @@ if args.filename:
     if os.path.exists('fulltable.csv'):
         shutil.move('fulltable.csv', 'fulltable_prev.csv')
 
-    system('xls2csv ' + args.filename + ' | sed -f shorten.sed | ./extractcolumns.py --headerfile headers.txt --sort -o fulltable.csv')
+    system('xls2csv ' + args.filename + " | sed -f shorten.sed | ./extractcolumns.py --headerfile headers.txt --sort -o fulltable.csv")
     log("Regenerated fulltable from " + args.filename, echo=True)
-    open('datafilename', 'w').write(args.filename)
+    with open('datafilename', 'w') as datafilenamef:
+        datafilenamef.write(args.filename)
 else:
     print "Assuming same data as last time or other source of data"
 
+differ = difflib.HtmlDiff()
+diffs = differ.make_file(open('fulltable_prev.csv'), open('fulltable.csv'),
+                          "Previous version", "Current version",
+                          context=True, numlines=0)
+print >> open('diffs.html', 'w'), diffs
+
 if args.sendmail:
     shutil.copy('mailhead.txt', 'mailbody.txt')
-    differ = difflib.HtmlDiff()
-    diffs = differ.make_table(open('fulltable.csv'), open('fulltable_prev.csv'), 
-                              "Current version", "Previous version", 
-                              context=True, numlines=1)
-    print >> open('diffs.html', 'a'), diffs
-    system('diff fulltable.csv fulltable_prev.csv | tee -a mailbody.txt')
-    msg = MIMEText(open('mailbody.txt').read())
+
+    msg = email.MIMEMultipart.MIMEMultipart()
     msg['Subject'] = "Timetable regenerated"
     msg['From'] = "carl.sandrock@up.ac.za"
     msg['To'] = ','.join(i.strip() for i in open('maillist') if not i.startswith('#'))
+    msg.attach(email.MIMEText.MIMEText(open('mailbody.txt').read()))
+    attachmentpart = email.MIMEText.MIMEText(diffs, 'html')
+    attachmentpart.add_header('Content-Disposition', 'attachment; filename="diffs.html')
+    msg.attach(attachmentpart)
 
     s = smtplib.SMTP('localhost')
     s.sendmail(msg['From'], msg['To'].split(','), msg.as_string())
@@ -68,12 +79,11 @@ if args.sendmail:
 
 
 datafilename = open('datafilename').read().strip()
-
-outputdir="output"
-subdiff="./subdiff"
-
 # assuming the filename looks like timetable_2010_20090201.xls, parse out the pieces
 datayear, datadate = re.match(r'.*_(\d{4})_(\d+).*', datafilename).groups()
+
+outputdir = os.path.join("output", datayear)
+subdiff="./subdiff"
 
 print "Timetable for %s given on %s" % (datayear, datadate)
 
@@ -112,8 +122,9 @@ for line in open('indexscript'):
     indexfile.write(line)
 
 index("<body onload=hideall()>")
-index("<h1>Timetables</h1>")
-index("<p>These timetables were automatically generated on " + datestr + ".  Click on the headings to expand the options.</p>")
+index("<h1>Timetables for %s</h1>" % datayear)
+index("<p>These timetables were automatically generated on %s. Click on the headings to expand the options.</p>" % datestr)
+index("<p>The original datafile was sent on %s. Note that these timetables are only trustworthy near the date of the original datafile for departments other than Chemical Engineering.</p>" % datadate)
 
 
 # Make target directory
@@ -131,7 +142,7 @@ for dept in depts:
         shutil.copy(f, dirname)
 
     xmlfile = os.path.join(dirname, 'timetable.xml')
-    system('./ttable.py -o ' + xmlfile  +
+    system('./ttable.py -o ' + xmlfile +
               ' --group ' + dept +
               ' --deptident "' + name + '"'
               ' --year ' + datayear +
@@ -189,6 +200,6 @@ for dept in depts:
 
 index("</body></html>")
 
-system("sed -i 's," + outputdir + "/,,g' " + indexfilename)
+system("sed -i.bak 's," + outputdir + "/,,g' " + indexfilename)
 
 
