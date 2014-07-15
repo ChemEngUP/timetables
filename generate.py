@@ -23,7 +23,8 @@ parser.add_argument('--sendmail', help='Send a notification e-mail',
 parser.add_argument('--debug', help='Print commands as they are written', 
                     action="store_true", default=False)
 parser.add_argument('filename', nargs="?", help='XLS file to parse for timetable')
-
+parser.add_argument('--nodiff', help="Don't do a diff on the files",
+                    action="store_true", default=False)
 args = parser.parse_args()
 
 
@@ -55,11 +56,12 @@ if args.filename:
 else:
     print "Assuming same data as last time or other source of data"
 
-differ = difflib.HtmlDiff()
-diffs = differ.make_file(open('fulltable_prev.csv'), open('fulltable.csv'),
-                          "Previous version", "Current version",
-                          context=True, numlines=0)
-print >> open('diffs.html', 'w'), diffs
+if not args.nodiff:
+    differ = difflib.HtmlDiff()
+    diffs = differ.make_file(open('fulltable_prev.csv'), open('fulltable.csv'),
+                              "Previous version", "Current version",
+                              context=True, numlines=0)
+    print >> open('diffs.html', 'w'), diffs
 
 if args.sendmail:
     shutil.copy('mailhead.txt', 'mailbody.txt')
