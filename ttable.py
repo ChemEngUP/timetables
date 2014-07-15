@@ -238,7 +238,7 @@ def readcsv(incsv, ignore, wanted, options):
 
         for sem in listify(semester):
             #TODO: Make this cleanup more generic
-            engcodes = t["ENGcode"].replace(" ", "").replace("(", "").replace(")","").replace(",", "")
+            engcodes = t["ENGcode"].translate(None, "`' (),")
             groups = engcodes[0::2]
             years = map(int, engcodes[1::2])
             assert len(groups)==len(years), "Problem parsing ENGcode " + engcodes
