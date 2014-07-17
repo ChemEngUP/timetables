@@ -28,7 +28,7 @@ parser.add_argument('--nodiff', help="Don't do a diff on the files",
 args = parser.parse_args()
 
 
-logfile = file('log', 'w')
+logfile = file('log', 'w+')
 
 def log(string, echo=False):
     if echo:
@@ -41,15 +41,16 @@ def system(string):
     os.system(string)
 
 datestr = str(datetime.datetime.now())
-log("Run on" + datestr)
-
+log("Run on " + datestr)
 
 # regenerate fulltable if filename specified
 if args.filename:
+    filterchain = " | sed -f shorten.sed | ./extractcolumns.py --headerfile headers.txt --sort -o fulltable.csv"
+
     if os.path.exists('fulltable.csv'):
         shutil.move('fulltable.csv', 'fulltable_prev.csv')
 
-    system('xls2csv ' + args.filename + " | sed -f shorten.sed | ./extractcolumns.py --headerfile headers.txt --sort -o fulltable.csv")
+    system('xls2csv ' + args.filename + filterchain)
     log("Regenerated fulltable from " + args.filename, echo=True)
     with open('datafilename', 'w') as datafilenamef:
         datafilenamef.write(args.filename)
