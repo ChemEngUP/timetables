@@ -7,7 +7,6 @@ import csv
 import sys
 import re
 import logging
-logging.basicConfig(level=logging.INFO)
 
 headers = ["Year", "ModuleName", "Group", "Language", "Activity", "YearPhase",
            "Day", "Time", "Venue", "ENGcode"]
@@ -17,6 +16,8 @@ parser.add_argument("url", default="http://uptt.up.ac.za:90/eng_timetable.html",
                     nargs="?", type=str)
 parser.add_argument('--outfile', '-o', default=sys.stdout,
                     type=argparse.FileType('w'))
+parser.add_argument('--debug', '-d', action='store_true', default=False,
+                    help="Set logging level to debug")
 
 def engcodesplit(codestr):
     return (codestr[i:i+2] for i in range(0, len(codestr), 2))
@@ -47,6 +48,13 @@ def downloadtable(url):
 
 if __name__ == "__main__":
     args = parser.parse_args()
+
+    logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO)
+
     out = csv.writer(args.outfile)
     out.writerow(headers)
-    out.writerows(parse(row) for row in downloadtable(args.url) if row)
+    for row in downloadtable(args.url):
+        if row:
+            parsedrow = parse(row)
+            if parsedrow:
+                out.writerow(parsedrow)
