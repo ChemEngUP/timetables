@@ -14,7 +14,8 @@ parser.add_argument('--outfile', help='Filename to write to, default stdout',
 
 args = parser.parse_args()
 
-d = pandas.read_csv(args.infile, encoding='utf-8-sig').dropna(how='all')
+d = pandas.read_csv(args.infile).dropna(how='all')
+#d = pandas.read_csv(args.infile, encoding='utf-8-sig').dropna(how='all')
 
 # Source file:
 # ModDesc1  NADescr  ActGrp1  ActLang1  ActNr1  DBDayName  FromTime  ToTime  LocDesc       SSet  SSetLang
@@ -35,6 +36,7 @@ renamecols = {'ModDesc1': 'ModuleName',
               'SSet': 'ENGcode',
               'SSetLang': 'Language',
              }
+assert set(renamecols) <= set(d.columns), "When renaming, these columns weren't found: " + ','.join(set(renamecols) - set(d.columns))
 
 d.rename(columns=renamecols, inplace=True)
     

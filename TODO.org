@@ -1,0 +1,23 @@
+* Automation
+** DONE Extract CSV from report
+Latest reports:
+
+http://appsylrp01.up.ac.za/Reports
+
+Gebruikernaam: ENGReports
+Wagwoord: Engineering1
+
+NOW: http://uptt.up.ac.za:90/csvfiles/engallmodules.csv
+
+** DONE Automatically convert CSV to correct format
+*** DONE Change extractcolumns.py to handle column renames
+(Perhaps switch to pandas for the CSV handling)
+* TODO Clash detection.  
+We need to flag periods that clash realisticly.
+dupreports.xsl tries this but seems not to work reliably.
+
+* TODO automated checking in genereate
+** TODO Subjects check
+Check that all the subjects from the yearbook are on the timetable,
+and no others.
+** TODO Count check
