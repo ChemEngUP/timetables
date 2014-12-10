@@ -51,6 +51,7 @@ if args.filename:
         shutil.move('fulltable.csv', 'fulltable_prev.csv')
 
     system('xls2csv ' + args.filename + filterchain)
+    system('cat extras.csv >> fulltable.csv')
     log("Regenerated fulltable from " + args.filename, echo=True)
     with open('datafilename', 'w') as datafilenamef:
         datafilenamef.write(args.filename)
@@ -72,9 +73,10 @@ if args.sendmail:
     msg['From'] = "carl.sandrock@up.ac.za"
     msg['To'] = ','.join(i.strip() for i in open('maillist') if not i.startswith('#'))
     msg.attach(email.MIMEText.MIMEText(open('mailbody.txt').read()))
-    attachmentpart = email.MIMEText.MIMEText(diffs, 'html')
-    attachmentpart.add_header('Content-Disposition', 'attachment; filename="diffs.html')
-    msg.attach(attachmentpart)
+    if not args.nodiff:
+        attachmentpart = email.MIMEText.MIMEText(diffs, 'html')
+        attachmentpart.add_header('Content-Disposition', 'attachment; filename="diffs.html')
+        msg.attach(attachmentpart)
 
     s = smtplib.SMTP('localhost')
     s.sendmail(msg['From'], msg['To'].split(','), msg.as_string())

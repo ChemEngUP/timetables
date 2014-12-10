@@ -1,6 +1,0 @@
---- This is an automatically generated message ---
-
-Timetables have been regenerated
-The new tables can be accessed at http://skoll.up.ac.za/timetables
-
-The differences between the previous and current runs:

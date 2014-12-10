@@ -6,7 +6,6 @@ s,Ing/Eng,Eng,g
 s,Teologie/Theology,Theol.,g
 s,Louwsaal/Louw,Louw,g
 s,GW/HSB,HSB,g
-s,GW/HB,HSB,g
 s,Wisk/Maths,Maths,g
 s,Noordsaal/North,North,g
 s,Suidsaal/South,South,g
@@ -28,12 +27,5 @@ s,Geografie/Geography,Geography,g
 s,Min Wet/Science,Min Sci,g
 s,Netwerke/Networks,Networks,g
 s,Eeufees/Centenary,Centenary,g
-s,JJ Theronsaal/JJ Theron hall,JJ Theron hall,g
 s/&amp;/and/g
 s/ *& */ and /g
-s/'//g
-s,Monday,Ma/Mo,g
-s,Tuesday,Di/Tu,g
-s,Wednesday,Wo/We,g
-s,Thursday,Do/Th,g
-s,Friday,Vr/Fr,g
