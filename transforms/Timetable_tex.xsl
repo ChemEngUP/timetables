@@ -67,7 +67,7 @@
   <xsl:for-each select="semesters/semester">
     <xsl:apply-templates select="." >
       <xsl:with-param name="startperiod" select="1" />
-      <xsl:with-param name="endperiod" select="10" />
+      <xsl:with-param name="endperiod" select="11" />
     </xsl:apply-templates>
   </xsl:for-each>
   \end{document}

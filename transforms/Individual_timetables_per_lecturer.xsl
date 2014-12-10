@@ -59,7 +59,14 @@
     <body>
       <xsl:for-each select="personnel/person">
 	<xsl:if test="./@name!='Almal'">
-	  <h1>Timetables for <xsl:value-of select="./@name"/> </h1>
+	  <h1>
+	    <span>
+	      <xsl:attribute name="id">
+		<xsl:value-of select="./@name"/>
+		</xsl:attribute>
+		Timetables for <xsl:value-of select="./@name"/> 
+	      </span>
+	    </h1>
 	  <xsl:apply-templates select="/timetable/semesters/semester" >
 	    <xsl:with-param name="person" select="concat('/', ./@name, '/')"/>
 	  </xsl:apply-templates>
