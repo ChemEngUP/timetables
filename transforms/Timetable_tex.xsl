@@ -27,11 +27,11 @@
   \fontsize{7pt}{2pt}\usefont{T1}{phv}{m}{n}
   \begin{tabular}{|ll|c|c|c|c|c|c|c|c|c|c|c}
     \hline
-    &amp; Yr &amp; \multicolumn{2}{>{\shade{}}c|}{Ma/Mo} &amp;
-    \multicolumn{2}{>{\shade{}}c|}{Di/Tu} &amp;
-    \multicolumn{2}{>{\shade{}}c|}{Wo/We} &amp;
-    \multicolumn{2}{>{\shade{}}c|}{Do/Th} &amp;
-    \multicolumn{2}{>{\shade{}}c|}{Vr/Fr} \\
+    &amp; Yr &amp; \multicolumn{2}{c|}{Ma/Mo} &amp;
+    \multicolumn{2}{c|}{Di/Tu} &amp;
+    \multicolumn{2}{c|}{Wo/We} &amp;
+    \multicolumn{2}{c|}{Do/Th} &amp;
+    \multicolumn{2}{c|}{Vr/Fr} \\
     &amp; &amp; Afr &amp; Eng &amp; Afr &amp; Eng &amp; Afr &amp; Eng &amp; Afr &amp; Eng &amp; Afr &amp; Eng \\
     \hline
     <xsl:apply-templates select="period[(./@number >= $startperiod) and ($endperiod >= ./@number) ]" />
