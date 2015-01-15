@@ -11,12 +11,12 @@ start4yr="Four-year Programmes"
 start5yr="^Eng.*Engineering Augmented Degree Programme"
 end5yr="REQUIREMENTS FOR PROMOTION"
 
-echo "Exctracting course info"
+echo "Extracting course info"
 # List of disciplines:
 grep "$engpattern" $yearbook | sort | uniq | cut -d " " -f 2- > disciplines
 
 # counts for all subjects
-python ./count_yearbook_new.py $yearbook > counts.txt
+python ./count_yearbook.py $yearbook > counts.txt
 
 # extract 4 and 5 year plans
 sed -n "/$start4yr/,\$p" $yearbook | sed -n "1,/$start5yr/p" > 4yr.txt
@@ -25,7 +25,7 @@ sed -n "/$start5yr/,/$end5yr/p" $yearbook > 5yr.txt
 wc -l $1 disciplines counts.txt [45]yr.txt
 
 echo 
-echo "Exctracting subjects per discipline"
+echo "Extracting subjects per discipline"
 
 # subjects per discipline
 for plan in 4yr 5yr ; do
