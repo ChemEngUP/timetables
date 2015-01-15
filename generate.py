@@ -180,19 +180,19 @@ for dept in depts:
     index("<h3>Tables</h3>")
     index("<ol>")
     for style in glob.glob('transforms/*.xsl'):
-    	stylename = os.path.basename(style)[:-4]
-    	index("<li>")
-    	print "  creating", stylename
-    	if 'tex' in stylename:
+        stylename = os.path.basename(style)[:-4]
+        index("<li>")
+        print "  creating", stylename
+        if 'tex' in stylename:
             system(' '.join(['sabcmd -x', xmlfile, style, os.path.join(dirname, stylename + '.tex')]))
-    	    print "   - calling LaTeX"
+            print "   - calling LaTeX"
             # TODO: Handle LaTeX errors
-    	    system('cd ' + dirname + ';pdflatex -interaction=nonstopmode ' +  stylename + ' | grep "No pages"')
-    	    index( '<a href="' + dirname + '/' + stylename + '.pdf">' + stylename[:-4] + ' (pdf)</a>')
-    	else:
-    	    system('sabcmd -x ' + xmlfile + ' ' + style + ' ' + dirname + '/' + stylename + '.html')
-    	    index('<a href="' + dirname + '/' + stylename + '.html''">' + stylename + '</a>')
-    	index("</li>")
+            system('cd ' + dirname + ';pdflatex -interaction=nonstopmode ' +  stylename + ' | grep "No pages"')
+            index( '<a href="' + dirname + '/' + stylename + '.pdf">' + stylename[:-4] + ' (pdf)</a>')
+        else:
+            system('sabcmd -x ' + xmlfile + ' ' + style + ' ' + dirname + '/' + stylename + '.html')
+            index('<a href="' + dirname + '/' + stylename + '.html''">' + stylename + '</a>')
+        index("</li>")
     index("</ol>")
     index("</div>")
 
