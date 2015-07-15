@@ -18,9 +18,9 @@ import difflib
 # TODO: Use argparse for argument handling
 import argparse
 parser = argparse.ArgumentParser(description='Generate timetables')
-parser.add_argument('--sendmail', help='Send a notification e-mail', 
+parser.add_argument('--sendmail', help='Send a notification e-mail',
                     action="store_true", default=False)
-parser.add_argument('--debug', help='Print commands as they are written', 
+parser.add_argument('--debug', help='Print commands as they are written',
                     action="store_true", default=False)
 parser.add_argument('filename', nargs="?", help='XLS file to parse for timetable')
 parser.add_argument('--nodiff', help="Don't do a diff on the files",
@@ -36,22 +36,26 @@ def log(string, echo=False):
     print >> logfile, string
 
 def system(string):
-    if args.debug: 
+    if args.debug:
         print string
     os.system(string)
 
 datestr = str(datetime.datetime.now())
 log("Run on " + datestr)
 
+inputfilename = 'fulltable.csv'
+backupfilename = 'fulltable_prev.csv'
+lastrunfilename = 'fulltable_lastrun.csv'
+
 # regenerate fulltable if filename specified
 if args.filename:
-    filterchain = " | sed -f shorten.sed | ./extractcolumns.py --headerfile headers.txt --sort -o fulltable.csv"
+    filterchain = " | sed -f shorten.sed | ./extractcolumns.py --headerfile headers.txt --sort -o {}".format(inputfilename)
 
-    if os.path.exists('fulltable.csv'):
-        shutil.move('fulltable.csv', 'fulltable_prev.csv')
+    if os.path.exists(inputfilename):
+        shutil.move(inputfilename, backupfilename)
 
     system('xls2csv ' + args.filename + filterchain)
-    system('cat extras.csv >> fulltable.csv')
+    system('cat extras.csv >> {}'.format(inputfilename))
     log("Regenerated fulltable from " + args.filename, echo=True)
     with open('datafilename', 'w') as datafilenamef:
         datafilenamef.write(args.filename)
@@ -60,7 +64,7 @@ else:
 
 if not args.nodiff:
     differ = difflib.HtmlDiff()
-    diffs = differ.make_file(open('fulltable_prev.csv'), open('fulltable.csv'),
+    diffs = differ.make_file(open(lastrunfilename), open(inputfilename),
                               "Previous version", "Current version",
                               context=True, numlines=0)
     print >> open('diffs.html', 'w'), diffs
@@ -123,8 +127,7 @@ def checkdifferences(countfile, dirname, lang1, lang2):
 
 
 index("<html>")
-for line in open('indexscript'):
-    indexfile.write(line)
+index('<script src="scripts/timetable.js"></script>')
 
 index("<body onload=hideall()>")
 index("<h1>Timetables for %s</h1>" % datayear)
@@ -151,7 +154,7 @@ for dept in depts:
               ' --group ' + dept +
               ' --deptident "' + name + '"'
               ' --year ' + datayear +
-              ' < fulltable.csv')
+              ' < {}'.format(inputfilename))
 
     print "  Running checks"
 
@@ -206,5 +209,6 @@ for dept in depts:
 index("</body></html>")
 
 system("sed -i.bak 's," + outputdir + "/,,g' " + indexfilename)
-
-
+# FIXME: This is ugly!
+system("cp -r scripts " + outputdir)
+shutil.copy(inputfilename, lastrunfilename)
