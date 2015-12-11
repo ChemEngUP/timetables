@@ -25,6 +25,8 @@ parser.add_argument('--debug', help='Print commands as they are written',
 parser.add_argument('filename', nargs="?", help='XLS file to parse for timetable')
 parser.add_argument('--nodiff', help="Don't do a diff on the files",
                     action="store_true", default=False)
+parser.add_argument('--ignore', help='Ignore errors on system call',
+                    action='store_true', default=False)
 args = parser.parse_args()
 
 
@@ -38,7 +40,10 @@ def log(string, echo=False):
 def system(string):
     if args.debug:
         print string
-    os.system(string)
+    result = os.system(string)
+    if not args.ignore and result != 0:
+        raise Exception, "Command processing error"
+    return result
 
 datestr = str(datetime.datetime.now())
 log("Run on " + datestr)
@@ -187,13 +192,16 @@ for dept in depts:
         index("<li>")
         print "  creating", stylename
         if 'tex' in stylename:
-            system(' '.join(['sabcmd -x', xmlfile, style, os.path.join(dirname, stylename + '.tex')]))
+            outfilename = os.path.join(dirname, stylename + '.tex')
+            system(' '.join(['xsltproc', '-o', outfilename, style, xmlfile]))
             print "   - calling LaTeX"
             # TODO: Handle LaTeX errors
-            system('cd ' + dirname + ';pdflatex -interaction=nonstopmode ' +  stylename + ' | grep "No pages"')
+            system('cd ' + dirname + ';pdflatex -interaction=nonstopmode ' +
+                   stylename + ' | grep "No pages" && false || true')
             index( '<a href="' + dirname + '/' + stylename + '.pdf">' + stylename[:-4] + ' (pdf)</a>')
         else:
-            system('sabcmd -x ' + xmlfile + ' ' + style + ' ' + dirname + '/' + stylename + '.html')
+            outfilename = os.path.join(dirname, stylename + '.html')
+            system(' '.join(['xsltproc', '-o', outfilename, style, xmlfile]))
             index('<a href="' + dirname + '/' + stylename + '.html''">' + stylename + '</a>')
         index("</li>")
     index("</ol>")
@@ -210,5 +218,5 @@ index("</body></html>")
 
 system("sed -i.bak 's," + outputdir + "/,,g' " + indexfilename)
 # FIXME: This is ugly!
-system("cp -r scripts " + outputdir)
+shutil.system("cp -r scripts " + outputdir)
 shutil.copy(inputfilename, lastrunfilename)
