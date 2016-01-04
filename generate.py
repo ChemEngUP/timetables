@@ -217,6 +217,6 @@ for dept in depts:
 index("</body></html>")
 
 system("sed -i.bak 's," + outputdir + "/,,g' " + indexfilename)
-# FIXME: This is ugly!
-shutil.system("cp -r scripts " + outputdir)
+
+shutil.copytree('scripts', os.path.join(outputdir, 'scripts'))
 shutil.copy(inputfilename, lastrunfilename)
