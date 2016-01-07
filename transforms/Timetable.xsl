@@ -56,6 +56,7 @@
   <xsl:param name="startperiod" select="1" />
   <xsl:param name="endperiod" select="10" />
   <h2><xsl:value-of select="/timetable/geninfo/@dept"/> - Semester <xsl:value-of select="./@number"/> of <xsl:value-of select="/timetable/@year"/> (generated on <xsl:value-of select="/timetable/geninfo/@date"/> )</h2>
+  <p>Please note the most up to date version of the time table is always available from <a href="http://www1.up.ac.za/timetables/eng_timetable.html">the planning department</a></p>
     <p>Click here to show or hide years:<button onclick="yearvis(1)">1</button> <button onclick="yearvis(2)">2</button> <button onclick="yearvis(3)">3</button> <button onclick="yearvis(4)">4</button> </p>
   <table class="year">
     <colgroup /><colgroup />
@@ -89,49 +90,17 @@
 <xsl:template match="/timetable">
   <html>
     <head>
+      <title><xsl:value-of select="/timetable/geninfo/@dept"/> timetable</title>
       <link href="timetable.css" rel="stylesheet" type="text/css" />
-  <script type="text/javascript">
-//<![CDATA[
-<!--//
-    function strhash(str) {
-	var hash=0;
-	for (var i = 0; i<str.length; i++) {
-	    hash += str.charCodeAt(i);
-	}
-	return hash % 10;
-    }
+<!--       <script src="../scripts/jquery-1.10.2.js"></script> -->
+<!--       <script src="../scripts/jquery-ui.js"></script> -->
+      <script src="../scripts/timetable.js"></script>
+<!--   <script> -->
+<!--   $(function() { -->
+<!--     $( "#accordion" ).accordion(); -->
+<!--   }); -->
+<!--   </script> -->
 
-    function armhighlights() {
-       var divs=document.getElementsByTagName('div');
-       for (var i = 0; i<divs.length; i++) {
-           if (divs[i].className=='subject') {
-	       subject = divs[i].innerHTML.replace(/[()]/g,'');
-               divs[i].onclick=Function("highlight('" + subject + "')");
-           }
-       }
-    }
-
-    function highlight(subject) { 
-       var subs=document.getElementsByTagName('div');
-       for (var i = 0; i<subs.length; i++) { 
-           if (subs[i].className=='subject' & subs[i].innerHTML.replace(/[()]/g,'')==subject) {
-	      var p = subs[i].parentNode;
-              p.className = /high.$/.test(p.className)?p.className.substr(0,3):(p.className + 'high' + strhash(subject));
-           }
-       }
-    }
-
-    function yearvis(year) {
-	var rows=document.getElementsByTagName('tr');
-	for (var i=0; i<rows.length; i++) {
-	    if (rows[i].className==('year'+year)) {
-		rows[i].style.display = rows[i].style.display=='none'?'':'none';
-	    }
-	}
-    }
-//-->
-//]]>
-  </script>
     </head>
     <body onload='armhighlights()'>
       <xsl:for-each select="semesters/semester">

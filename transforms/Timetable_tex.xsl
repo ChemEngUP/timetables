@@ -23,7 +23,7 @@
   <xsl:param name="startperiod" select="1" />
   <xsl:param name="endperiod" select="10" />
   \printtitle{<xsl:value-of select="/timetable/geninfo/@dept"/> - Semester <xsl:value-of select="./@number"/> of <xsl:value-of select="/timetable/@year"/> (generated on <xsl:value-of select="/timetable/geninfo/@date"/> )} \\ 
-
+  \printsubtitle{The most recent version of the time table is at \url{http://www1.up.ac.za/timetables/eng_timetable.html}} \\
   \fontsize{7pt}{2pt}\usefont{T1}{phv}{m}{n}
   \begin{tabular}{|ll|c|c|c|c|c|c|c|c|c|c|c}
     \hline
@@ -46,14 +46,16 @@
   \usepackage[margin=3mm]{geometry}
   \usepackage{multirow}
   \usepackage{color}
+  \usepackage{url}
   \definecolor{countershade}{gray}{0.95}
   \usepackage{colortbl}
   \usepackage{graphicx}
   \newcommand\widebox[2]{\multicolumn{2}{#1}{\parbox{0.14\textwidth}{\centering #2}}}
   \newcommand\narrowbox[1]{\parbox{0.07\textwidth}{\centering #1}}
   \newcommand\subject[1]{{\fontsize{8pt}{2pt}\usefont{T1}{phv}{m}{n} #1}}
-  \newcommand\venue[1]{{\fontsize{6pt}{2pt}\usefont{T1}{phv}{m}{n} #1}}
+  \newcommand\venue[1]{{\fontsize{5pt}{2pt}\usefont{T1}{phv}{m}{n} #1}}
   \newcommand\printtitle[1]{\fontsize{10pt}{2pt}\usefont{T1}{phv}{m}{n} #1}
+  \newcommand\printsubtitle[1]{\fontsize{8pt}{2pt}\usefont{T1}{phv}{m}{n} #1}
   \newcommand\credits[1]{\fontsize{5pt}{2pt}\usefont{T1}{phv}{m}{n} #1}
   \newcommand\yearstrut{\rule{0pt}{2ex}}
   \newcommand\shade{\rowcolor{countershade}}
