@@ -5,5 +5,8 @@ yearbook/*.txt
 diffs.html
 datafilename
 log
-fulltable.csv
-fulltable_prev.csv
+*.csv
+output.old
+olddata
+_darcs
+booklet
