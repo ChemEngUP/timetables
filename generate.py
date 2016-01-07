@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import sys
 import datetime
@@ -30,19 +30,19 @@ parser.add_argument('--ignore', help='Ignore errors on system call',
 args = parser.parse_args()
 
 
-logfile = file('log', 'w+')
+logfile = open('log', 'w+')
 
 def log(string, echo=False):
     if echo:
-        print string
-    print >> logfile, string
+        print(string)
+    print(string, file=logfile)
 
 def system(string):
     if args.debug:
-        print string
+        print(string)
     result = os.system(string)
     if not args.ignore and result != 0:
-        raise Exception, "Command processing error"
+        raise Exception("Command processing error")
     return result
 
 datestr = str(datetime.datetime.now())
@@ -65,14 +65,14 @@ if args.filename:
     with open('datafilename', 'w') as datafilenamef:
         datafilenamef.write(args.filename)
 else:
-    print "Assuming same data as last time or other source of data"
+    print("Assuming same data as last time or other source of data")
 
 if not args.nodiff:
     differ = difflib.HtmlDiff()
     diffs = differ.make_file(open(lastrunfilename), open(inputfilename),
                               "Previous version", "Current version",
                               context=True, numlines=0)
-    print >> open('diffs.html', 'w'), diffs
+    print(diffs, file=open('diffs.html', 'w'))
 
 if args.sendmail:
     shutil.copy('mailhead.txt', 'mailbody.txt')
@@ -99,7 +99,7 @@ datayear, datadate = re.match(r'.*_(\d{4})_(\d+).*', datafilename).groups()
 outputdir = os.path.join("output", datayear)
 subdiff="./subdiff"
 
-print "Timetable for %s given on %s" % (datayear, datadate)
+print("Timetable for %s given on %s" % (datayear, datadate))
 
 # backup old output
 if os.path.exists(outputdir + '.old'):
@@ -110,7 +110,7 @@ if os.path.exists(outputdir):
 # Generate 4 year and 5 year plan entries
 departmentlist = {}
 depts = []
-for line in file('departmentlist'):
+for line in open('departmentlist'):
     code, afr, eng = line.strip().split("\t")
     departmentlist[code] = [afr + ' (4 jr)', eng + ' (4 yr)']
     departmentlist[code.lower()] = [afr + ' (5 jr)', eng + ' (5 yr)']
@@ -121,12 +121,12 @@ indexfilename = os.path.join(outputdir, 'index.html')
 indexfile = open(indexfilename, 'w')
 
 def index(string):
-    print >> indexfile, string
+    print(string, file=indexfile)
 
 
 def checkdifferences(countfile, dirname, lang1, lang2):
     result = os.path.join(dirname, "diff_" + lang1 + lang2 + ".html")
-    print "    checking difference between",  lang1, "and", lang2
+    print("    checking difference between",  lang1, "and", lang2)
     system(subdiff + " " + countfile + "." + lang1 + " " + countfile + "." + lang2 + " > " + result)
     index('<li>Differences between <a href="' + result + '">1=' + lang1 + ', 2=' + lang2+ '</a></li>')
 
@@ -148,7 +148,7 @@ for dept in depts:
     index("<h2 onclick=showhide(\"" + safename + "\")>" + name + "</h2>" )
     index('<div id="' + safename + '">')
 
-    print 'Doing', name, '...'
+    print('Doing', name, '...')
     dirname = os.path.join(outputdir, safename)
     os.mkdir(dirname)
     for f in glob.glob(os.path.join('stylesheets', '*')):
@@ -161,7 +161,7 @@ for dept in depts:
               ' --year ' + datayear +
               ' < {}'.format(inputfilename))
 
-    print "  Running checks"
+    print("  Running checks")
 
     # Generate subjects list
     countfile = xmlfile + ".count"
@@ -190,11 +190,11 @@ for dept in depts:
     for style in glob.glob('transforms/*.xsl'):
         stylename = os.path.basename(style)[:-4]
         index("<li>")
-        print "  creating", stylename
+        print("  creating", stylename)
         if 'tex' in stylename:
             outfilename = os.path.join(dirname, stylename + '.tex')
             system(' '.join(['xsltproc', '-o', outfilename, style, xmlfile]))
-            print "   - calling LaTeX"
+            print("   - calling LaTeX")
             # TODO: Handle LaTeX errors
             system('cd ' + dirname + ';pdflatex -interaction=nonstopmode ' +
                    stylename + ' | grep "No pages" && false || true')

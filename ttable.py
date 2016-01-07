@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 # FIXME: this does three passes at the moment -- should be only one!
 
@@ -10,22 +10,22 @@ import os
 import os.path
 import csv
 
-ver = "1.1"
+ver = "1.2"
 longdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
 day_afr = ['Ma', 'Di', 'Wo', 'Do', 'Vr']
 day_eng = ['Mo', 'Tu', 'We', 'Th', 'Fr']
 day_both = ["/".join(i) for i in zip(day_afr, day_eng)]
 
 def version():
-    print "ttable version", ver
-    print """Copyright (C) 2005 Carl Sandrock
+    print("ttable version", ver)
+    print("""Copyright (C) 2016 Carl Sandrock
 
 ttable comes with NO WARRANTY, to the extent permitted by law
-"""
+""")
 
 def usage():
     """Print some descriptive text about the usage of this script"""
-    print """
+    print("""
 Usage: ttable -[hqv] csvfile [-o outputfile] [-i ignorefile] [-s subjectsfile] [-c countfile] [-y year]
 Options
    -h, --help       Prints this message
@@ -43,7 +43,7 @@ Options
    -y, --year       specify year to be printed on the timetables
                     defaults to this year
    -l, --languagemerge Merge identical classes for A and E at same time to B
-"""
+""")
     return None
 
 def fixup_arg(optarg, optshort, optlong):
@@ -83,8 +83,8 @@ def processoptions(argv):
                                    optlong)
 
     except getopt.GetoptError:
-        print "ttable: unrecognised input argument"
-        print
+        print("ttable: unrecognised input argument")
+        print()
         usage()
         sys.exit(2)
 
@@ -108,11 +108,11 @@ def processoptions(argv):
         sys.exit(0)
 
     if "verbose" in options:
-        print "Options:"
+        print("Options:")
         for key, value in options.items():
-            print ' ', key,
-            if value: print '=', value
-            else: print 'on'
+            print(key, end=' ')
+            if value: print('=', value)
+            else: print('on')
 
     return options
 
@@ -122,7 +122,7 @@ def checkoptions(options):
 
     for opt in ['ignorefile', 'subjectsfile']:
         if not os.path.exists(options[opt]):
-            print options[opt], "does not exist"
+            print(options[opt], "does not exist")
             sys.exit(2)
 
 def listify(thing):
@@ -133,7 +133,7 @@ def listify(thing):
 
 def wantmatch(entry, wanted):
     retval = True
-    for field in wanted.keys():
+    for field in list(wanted.keys()):
         for want in listify(wanted[field]):
             entrymatches = False
             for ent in listify(entry[field]):
@@ -170,24 +170,24 @@ def parsesubjectsfile(filename):
     responsible = dict()
     personnel = set()
     names = dict()
-    for line in file(filename):
+    for line in open(filename):
         sub, names["A"], names["E"] = line.strip().split('\t')
         if names["E"] == "=":
             names["E"] = names["A"]
         for lang in ["A", "E"]: names[lang] = names[lang].split('/')
-        names["B"] = filter(len, set(names["A"] + names["E"]))
+        names["B"] = list(filter(len, set(names["A"] + names["E"])))
         responsible[sub] = dict([lang,'/' + '/'.join(n) + '/']
-                                 for lang,n in names.iteritems())
+                                 for lang,n in names.items())
         personnel.update(names["B"])
     return responsible, personnel
 
 def parseignorefile(filename):
     ignore = []
-    igfile = file(filename)
+    igfile = open(filename)
     igheadings = igfile.readline().strip().split(',')
     ignore = []
     for line in igfile:
-        t = dict(zip(igheadings, line.strip().split(',')))
+        t = dict(list(zip(igheadings, line.strip().split(','))))
         ignore.append(t)
     igfile.close()
     return ignore
@@ -206,7 +206,7 @@ def parseday(daystr):
     elif daystr in day_both:
         i = day_both.index(daystr)
     else:
-        print 'Error parsing day string', daystr
+        print('Error parsing day string', daystr)
         raise ValueError
     return day_both[i]
 
@@ -217,9 +217,9 @@ def readcsv(incsv, ignore, wanted, options):
         if len(t) < 5 or all(len(i)==0 for i in t) or any(t[k] is None for k in neededfields):
             continue
         # Use heading names for a dict in the listings
-        if 'debug' in options: print t
+        if 'debug' in options: print(t)
         sub = t["ModuleName"].replace(' ', '')
-        ttime = map(conditiontime, t["Time"].split('-'))
+        ttime = list(map(conditiontime, t["Time"].split('-')))
         if len(ttime) != 2:
             continue
         starttime, endtime = ttime
@@ -238,9 +238,10 @@ def readcsv(incsv, ignore, wanted, options):
 
         for sem in listify(semester):
             #TODO: Make this cleanup more generic
-            engcodes = t["ENGcode"].translate(None, "`' (),")
+            deltable = {c: None for c in "`' (),"}
+            engcodes = t["ENGcode"].translate(deltable)
             groups = engcodes[0::2]
-            years = map(int, engcodes[1::2])
+            years = list(map(int, engcodes[1::2]))
             assert len(groups)==len(years), "Problem parsing ENGcode " + engcodes
             for group, year in set(zip(groups, years)):
                 entry = { 'module': sub,
@@ -254,11 +255,11 @@ def readcsv(incsv, ignore, wanted, options):
                           'group': group,
                           'year': year,
                           'realname': realname }
-                if "debug" in options: print entry
+                if "debug" in options: print(entry)
                 if wantmatch(entry, wanted) and not ignorematch(entry, ignore):
                     entries.append(entry)
-                if "debug" in options: print "matches", wanted, "but not", ignore
-    if "debug" in options: print entries
+                if "debug" in options: print("matches", wanted, "but not", ignore)
+    if "debug" in options: print(entries)
 
     return entries
 
@@ -282,7 +283,7 @@ def mergetimes(entries):
             else:
                 mergedentries.append(current)
                 current = entry
-                
+
     return mergedentries
 
 def mergevenues(entries):
@@ -367,7 +368,7 @@ def processentries(entries, mergedentries, responsible, personnel, options):
                             moduleElement.setAttribute("venue", entry["venue"])
                             moduleElement.setAttribute("name", entry["module"])
                             moduleElement.setAttribute("language", entry["language"])
-                            if responsible.has_key(entry["module"]):
+                            if entry["module"] in responsible:
                                 moduleElement.setAttribute("responsible", responsible[entry["module"]][entry["language"]])
                             moduleElement.setAttribute("type", entry["session"][0])
                             dayElement.appendChild(moduleElement)
@@ -402,7 +403,7 @@ def main(argv):
 
     [responsible, personnel] = parsesubjectsfile(options["subjectsfile"])
     ignore = parseignorefile(options["ignorefile"])
-    if "verbose" in options: print ignore
+    if "verbose" in options: print(ignore)
 
     wanted = {"group": options["group"]}
 
@@ -414,28 +415,25 @@ def main(argv):
     outputdoc = processentries(entries, mergedentries, responsible, personnel, options)
 
     if "outfile" in options:
-        outputdoc.writexml(file(options["outfile"], 'w'),
+        outputdoc.writexml(open(options["outfile"], 'w'),
                            indent="  ", addindent="  ", newl="\n")
     else:
-        print outputdoc.toprettyxml("  ")
+        print(outputdoc.toprettyxml("  "))
 
     if "countfile" in options:
-        countfile=file(options["countfile"], 'w')
+        countfile = open(options["countfile"], 'w')
         subs = set([key[0] for key in counts])
         for sub in sorted(subs):
             for lang in ["A", "E"]:
-                print >> countfile, sub, lang,
+                print(sub, lang, end=' ', file=countfile)
                 for act in ["L", "P", "O"]:
                     key = (sub, act, lang)
                     if key in counts:
-                        print >> countfile, counts[key],
+                        print(counts[key], end=' ', file=countfile)
                     else:
-                        print >> countfile, "0",
-                print >> countfile
+                        print("0", end=' ', file=countfile)
+                print(file=countfile)
         countfile.close()
 
 if __name__ == "__main__":
     main(sys.argv[1:])
-
-
-

@@ -7,7 +7,7 @@ N = len(filenames)
 
 files = []
 for filearg in filenames:
-    files.append(sorted(file(filearg).readlines()))
+    files.append(sorted(open(filearg).readlines()))
 
 subjects = set()
 lookup = [dict() for f in files]
@@ -15,21 +15,21 @@ for i, f in enumerate(files):
     for l in f:
         fields = l.strip().split(" ")
         subjects.add(fields[0])
-        numbers = map(int, fields[1:])
+        numbers = list(map(int, fields[1:]))
         numbers.append(sum(numbers))
         lookup[i][fields[0]] = numbers
 
-print "<html>"
-print "<head><style type='text/css'>"
-print """
+print("<html>")
+print("<head><style type='text/css'>")
+print("""
 tr.match { background-color: lightgreen ; }
 tr.mismatch { background-color: pink ; }
 p.blue { background-color: lightblue ; }
 td.matchFalse { font-weight: bold ; }
-"""
-print "</style>"
-print "</head>"
-print """
+""")
+print("</style>")
+print("</head>")
+print("""
 <script type='text/javascript'>
 
 function showhide() {
@@ -41,17 +41,17 @@ function showhide() {
    }
 }
 </script>
-"""
-print """<body>
+""")
+print("""<body>
 <p onclick='showhide()'>Green shows matches, red shows mismatches, bolded text shows mismatch locations.  Click this paragraph to hide or show matching lines.</p>
 <p> L: Lectures, P: Practicals (Tutorials are counted as Practicals), O: oefenklasse , t: total lectures </p>
-<table>"""
-print "<tr><th>Subject</th>",
-print "".join(["<th colspan=4>File%i</th>" % (i+1) for i, f in enumerate(files)]),
-print "</tr>"
-print "<tr>",
-print "<td/>","".join(["".join(["<th>" + s + "</th>" for s in ["L", "P", "O", "t"]]) for f in files]),
-print "<tr>"
+<table>""")
+print("<tr><th>Subject</th>", end=' ')
+print("".join(["<th colspan=4>File%i</th>" % (i+1) for i, f in enumerate(files)]), end=' ')
+print("</tr>")
+print("<tr>", end=' ')
+print("<td/>","".join(["".join(["<th>" + s + "</th>" for s in ["L", "P", "O", "t"]]) for f in files]), end=' ')
+print("<tr>")
 
 for subject in sorted(subjects):
     row = '<tr class="%s"><td>' + subject + "</td>"
@@ -72,6 +72,6 @@ for subject in sorted(subjects):
             row += "<td colspan=4>missing</td>"
             matchflag = "mismatch"
     row += "</tr>"
-    print row % (matchflag)
+    print(row % (matchflag))
 
-print "</table></body></html>"
+print("</table></body></html>")
