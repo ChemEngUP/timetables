@@ -6,6 +6,8 @@ from itertools import product
 with open('departmentlist') as f:
     disciplines = [line.split()[0] for line in f]
 
+disciplines += [d.lower() for d in disciplines]
+
 times = ["{:02d}:31".format(block) for block in range(7, 17+1)]
 
 days = ["Ma/Mo",
