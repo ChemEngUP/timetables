@@ -2,8 +2,6 @@
 
 import sys
 import datetime
-# TODO: Use logging module for logging!
-#import logging
 import shutil
 import os
 import re
@@ -14,6 +12,7 @@ import subprocess
 import email
 import smtplib
 import difflib
+import logging
 
 import argparse
 parser = argparse.ArgumentParser(description='Generate timetables')
@@ -28,24 +27,17 @@ parser.add_argument('--ignore', help='Ignore errors on system call',
                     action='store_true', default=False)
 args = parser.parse_args()
 
-
-logfile = open('log', 'w+')
-
-def log(string, echo=False):
-    if echo:
-        print(string)
-    print(string, file=logfile)
+logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO)
 
 def system(string):
-    if args.debug:
-        print(string)
+    logging.debug(string)
     result = os.system(string)
     if not args.ignore and result != 0:
         raise Exception("Command processing error")
     return result
 
 datestr = str(datetime.datetime.now())
-log("Run on " + datestr)
+logging.info("Run on " + datestr)
 
 inputfilename = 'fulltable.csv'
 backupfilename = 'fulltable_prev.csv'
@@ -60,18 +52,19 @@ if args.filename:
 
     system('xls2csv ' + args.filename + filterchain)
     system('cat extras.csv >> {}'.format(inputfilename))
-    log("Regenerated fulltable from " + args.filename, echo=True)
+    logging.info("Regenerated fulltable from " + args.filename)
     with open('datafilename', 'w') as datafilenamef:
         datafilenamef.write(args.filename)
 else:
-    print("Assuming same data as last time or other source of data")
+    logging.info("Assuming same data as last time or other source of data")
 
 if not args.nodiff:
     differ = difflib.HtmlDiff()
     diffs = differ.make_file(open(lastrunfilename), open(inputfilename),
                               "Previous version", "Current version",
                               context=True, numlines=0)
-    print(diffs, file=open('diffs.html', 'w'))
+    with open('diffs.html', 'w') as f:
+        f.write(diffs)
 
 if args.sendmail:
     shutil.copy('mailhead.txt', 'mailbody.txt')
@@ -98,7 +91,7 @@ datayear, datadate = re.match(r'.*_(\d{4})_(\d+).*', datafilename).groups()
 outputdir = os.path.join("output", datayear)
 subdiff="./subdiff"
 
-print("Timetable for %s given on %s" % (datayear, datadate))
+logging.info("Timetable for {} given on {}".format(datayear, datadate))
 
 # backup old output
 if os.path.exists(outputdir + '.old'):
@@ -120,12 +113,12 @@ indexfilename = os.path.join(outputdir, 'index.html')
 indexfile = open(indexfilename, 'w')
 
 def index(string):
-    print(string, file=indexfile)
+    indexfile.write(string + '\n')
 
 
 def checkdifferences(countfile, dirname, lang1, lang2):
     result = os.path.join(dirname, "diff_" + lang1 + lang2 + ".html")
-    print("    checking difference between",  lang1, "and", lang2)
+    logging.info("    checking difference between {} and {} ".format(lang1, lang2))
     system(subdiff + " " + countfile + "." + lang1 + " " + countfile + "." + lang2 + " > " + result)
     index('<li>Differences between <a href="' + result + '">1=' + lang1 + ', 2=' + lang2+ '</a></li>')
 
@@ -133,10 +126,15 @@ def checkdifferences(countfile, dirname, lang1, lang2):
 index("<html>")
 index('<script src="scripts/timetable.js"></script>')
 
-index("<body onload=hideall()>")
-index("<h1>Timetables for %s</h1>" % datayear)
-index("<p>These timetables were automatically generated on %s. Click on the headings to expand the options.</p>" % datestr)
-index("<p>The original datafile was sent on %s. Note that these timetables are only trustworthy near the date of the original datafile for departments other than Chemical Engineering.</p>" % datadate)
+index("""
+<body onload=hideall()>
+<h1>Timetables for {}</h1>
+<p>These timetables were automatically generated on {}.
+Click on the headings to expand the options.</p>
+<p>The original datafile was sent on {}.
+Note that these timetables are only trustworthy near the date of the original
+datafile for departments other than Chemical Engineering.</p>
+""".format(datayear, datestr, datadate))
 
 
 # Make target directory
@@ -147,7 +145,7 @@ for dept in depts:
     index("<h2 onclick=showhide(\"" + safename + "\")>" + name + "</h2>" )
     index('<div id="' + safename + '">')
 
-    print('Doing', name, '...')
+    logging.info('Doing ' + name + '...')
     dirname = os.path.join(outputdir, safename)
     os.mkdir(dirname)
     for f in glob.glob(os.path.join('stylesheets', '*')):
@@ -160,7 +158,7 @@ for dept in depts:
               ' --year ' + datayear +
               ' < {}'.format(inputfilename))
 
-    print("  Running checks")
+    logging.info("  Running checks")
 
     # Generate subjects list
     countfile = xmlfile + ".count"
@@ -189,11 +187,11 @@ for dept in depts:
     for style in glob.glob('transforms/*.xsl'):
         stylename = os.path.basename(style)[:-4]
         index("<li>")
-        print("  creating", stylename)
+        logging.info("  creating " + stylename)
         if 'tex' in stylename:
             outfilename = os.path.join(dirname, stylename + '.tex')
             system(' '.join(['xsltproc', '-o', outfilename, style, xmlfile]))
-            print("   - calling LaTeX")
+            logging.info("   - calling LaTeX")
             # TODO: Handle LaTeX errors
             system('cd ' + dirname + ';pdflatex -interaction=nonstopmode ' +
                    stylename + ' | grep "No pages" && false || true')
@@ -208,9 +206,9 @@ for dept in depts:
 
 
 #TODO: combined PDF output
-#print "Combining pdf output for ..."
+#logging.info("Combining pdf output for ...")
 #for filename in glob.glob(outputdir + "/*/*.pdf"):
-#    print "  ", filename
+#    logging.info("  " + filename)
 #    system('pdftk ' + outputdir/*/$filename.pdf cat output $outputdir/all$filename.pdf
 
 index("</body></html>")
