@@ -15,7 +15,6 @@ import email
 import smtplib
 import difflib
 
-# TODO: Use argparse for argument handling
 import argparse
 parser = argparse.ArgumentParser(description='Generate timetables')
 parser.add_argument('--sendmail', help='Send a notification e-mail',
