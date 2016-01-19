@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import sys
+import jinja2
 
 filenames = sys.argv[1:]
 N = len(filenames)
@@ -17,59 +18,37 @@ for i, f in enumerate(files):
         numbers.append(sum(numbers))
         lookup[i][fields[0]] = numbers
 
-print("<html>")
-print("<head><style type='text/css'>")
-print("""
-tr.match { background-color: lightgreen ; }
-tr.mismatch { background-color: pink ; }
-p.blue { background-color: lightblue ; }
-td.matchFalse { font-weight: bold ; }
-""")
-print("</style>")
-print("</head>")
-print("""
-<script type='text/javascript'>
 
-function showhide() {
-   var rows=document.getElementsByTagName('tr');
-   for (var i = 0; i<rows.length; i++) {
-      if (rows[i].className=='match') {
-         rows[i].style.display = (rows[i].style.display=='none')?'table-row':'none';
-      }
-   }
-}
-</script>
-""")
-print("""<body>
-<p onclick='showhide()'>Green shows matches, red shows mismatches, bolded text shows mismatch locations.  Click this paragraph to hide or show matching lines.</p>
-<p> L: Lectures, P: Practicals (Tutorials are counted as Practicals), O: oefenklasse , t: total lectures </p>
-<table>""")
-print("<tr><th>Subject</th>", end=' ')
-print("".join(["<th colspan=4>File%i</th>" % (i+1) for i, f in enumerate(files)]), end=' ')
-print("</tr>")
-print("<tr>", end=' ')
-print("<td/>","".join(["".join(["<th>" + s + "</th>" for s in ["L", "P", "O", "t"]]) for f in files]), end=' ')
-print("<tr>")
+lines = []
 
 for subject in sorted(subjects):
-    row = '<tr class="%s"><td>' + subject + "</td>"
+    line = {'subject': subject}
     matchflag = "match"
+    row = []
     for i in range(N):
         if subject in lookup[i]:
             vals = lookup[i][subject]
             matches = [lookup[j][subject] for j in range(N)
-                       if i!=j and subject in lookup[j]]
+                       if i != j and subject in lookup[j]]
+            matchentries = []
+            row.append({'type': 'matches', 'matchentries': matchentries})
             for vi, entry in enumerate(vals):
                 if False in [m[vi] == entry for m in matches]:
                     match = False
                     matchflag = "mismatch"
                 else:
                     match = True
-                row += "<td class='match%s'>%s</td>" % (match, entry)
+                matchentries.append([match, entry])
         else:
-            row += "<td colspan=4>missing</td>"
+            row.append({'type': 'missing'})
             matchflag = "mismatch"
-    row += "</tr>"
-    print(row % (matchflag))
+    line['row'] = row
+    line['matchflag'] = matchflag
+    lines.append(line)
 
-print("</table></body></html>")
+# TODO: This should be read from an environment
+template = jinja2.Template(open('templates/subdiff.html').read())
+
+print(template.render(filen=range(1, N+1),
+                      headings=["L", "P", "O", "t"],
+                      lines=lines))

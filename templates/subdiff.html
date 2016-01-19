@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style type='text/css'>")
+    tr.match { background-color: lightgreen ; }
+    tr.mismatch { background-color: pink ; }
+    p.blue { background-color: lightblue ; }
+    td.matchFalse { font-weight: bold ; }
+    </style>
+</head>
+
+<script type='text/javascript'>
+function showhide() {
+   var rows=document.getElementsByTagName('tr');
+   for (var i = 0; i<rows.length; i++) {
+      if (rows[i].className=='match') {
+         rows[i].style.display = (rows[i].style.display=='none')?'table-row':'none';
+      }
+   }
+}
+</script>
+
+<body>
+<p onclick='showhide()'>Green shows matches, red shows mismatches, bolded text shows mismatch locations.
+    Click this paragraph to hide or show matching lines.</p>
+<p> L: Lectures, P: Practicals (Tutorials are counted as Practicals), O: oefenklasse , t: total lectures </p>
+<table>
+    <tr>
+        <th>Subject</th>
+        {% for i in filen -%}
+        <th colspan=4>File{{i}}</th>
+        {% endfor -%}
+    </tr>
+    <tr>
+        <td/>
+        {% for i in filen -%}
+        {%  for h in headings -%}
+        <th>{{h}}</th>
+        {%  endfor -%}
+        {% endfor -%}
+    </tr>
+
+    {% for line in lines -%}
+    <tr class="{{line.matchflag}}">
+        <td>{{line.subject}}</td>
+        {% for item in line.row -%}
+        {%  if item.type == "missing" -%}
+        <td colspan=4>missing</td>
+        {%  else -%}
+        {%   for match, entry in item.matchentries -%}
+        <td class='match{{match}}'>{{entry}}</td>
+        {%   endfor -%}
+        {%  endif -%}
+        {% endfor -%}
+    </tr>
+    {% endfor -%}
+</table>
+</body>
+</html>
