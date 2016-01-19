@@ -5,9 +5,7 @@ import sys
 filenames = sys.argv[1:]
 N = len(filenames)
 
-files = []
-for filearg in filenames:
-    files.append(sorted(open(filearg).readlines()))
+files = [sorted(open(filearg).readlines()) for filearg in filenames]
 
 subjects = set()
 lookup = [dict() for f in files]

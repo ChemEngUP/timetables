@@ -89,7 +89,7 @@ datafilename = open('datafilename').read().strip()
 datayear, datadate = re.match(r'.*_(\d{4})_(\d+).*', datafilename).groups()
 
 outputdir = os.path.join("output", datayear)
-subdiff="./subdiff"
+subdiff = "./subdiff.py"
 
 logging.info("Timetable for {} given on {}".format(datayear, datadate))
 
@@ -123,10 +123,10 @@ def checkdifferences(countfile, dirname, lang1, lang2):
     index('<li>Differences between <a href="' + result + '">1=' + lang1 + ', 2=' + lang2+ '</a></li>')
 
 
-index("<html>")
-index('<script src="scripts/timetable.js"></script>')
-
 index("""
+<html>
+<script src="scripts/timetable.js"></script>
+
 <body onload=hideall()>
 <h1>Timetables for {}</h1>
 <p>These timetables were automatically generated on {}.
@@ -136,12 +136,18 @@ Note that these timetables are only trustworthy near the date of the original
 datafile for departments other than Chemical Engineering.</p>
 """.format(datayear, datestr, datadate))
 
+BADCHARS = str.maketrans({' ': '_',
+                          '(': None,
+                          ')': None})
+def sanitize(unsafe):
+    return unsafe.translate(BADCHARS)
+
 
 # Make target directory
 for dept in depts:
     name = departmentlist[dept][1]
-    # TODO: clean up this replace chain
-    safename = name.replace(" ", '_').replace('(', '').replace(')', '')
+    safename = sanitize(name)
+
     index("<h2 onclick=showhide(\"" + safename + "\")>" + name + "</h2>" )
     index('<div id="' + safename + '">')
 
