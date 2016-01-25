@@ -37,3 +37,8 @@ s,Tuesday,Di/Tu,g
 s,Wednesday,Wo/We,g
 s,Thursday,Do/Th,g
 s,Friday,Vr/Fr,g
+s,K1/Q1,Q1,g
+s,K2/Q2,Q2,g
+s,K3/Q3,Q3,g
+s,K4/Q4,Q4,g
+s,J/Y,Y,g

@@ -58,6 +58,9 @@ if args.filename:
 else:
     logging.info("Assuming same data as last time or other source of data")
 
+import builddb
+builddb.build('fulltable.csv', 'timetable.sqlite')
+
 if not args.nodiff:
     differ = difflib.HtmlDiff()
     diffs = differ.make_file(open(lastrunfilename), open(inputfilename),
@@ -168,7 +171,8 @@ for dept in depts:
 
     # Generate subjects list
     countfile = xmlfile + ".count"
-    system('cut -d" " -f 1 ' + countfile + '> ' + dirname + '/subjectlist')
+    subjectlist = os.path.join(dirname, 'subjectlist')
+    system('cut -d" " -f 1 ' + countfile + '> ' + subjectlist)
 
     # Generate language based counts
     for lang in ['A', 'E']:
@@ -208,6 +212,20 @@ for dept in depts:
             index('<a href="' + dirname + '/' + stylename + '.html''">' + stylename + '</a>')
         index("</li>")
     index("</ol>")
+
+    # FIXME: Shouldn't hardcode date - use dates.json
+    logging.info("Generating calendars")
+    index("<h3>Subject calendars</h3>")
+    for subject in sorted(set(open(subjectlist).read().splitlines())):
+        logging.info("  " + subject)
+        shortsub = subject.replace(' ', '')
+        subfile = os.path.join(dirname, shortsub + '.ical')
+        system('./makeevents.py "{}"'
+               ' -f ical '
+               ' -s "2016-02-01"'
+               ' -o {}'.format(subject, subfile))
+        index("<a href='{0}.ical'>{0}</a> ".format(shortsub))
+
     index("</div>")
 
 

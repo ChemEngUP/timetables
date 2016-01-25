@@ -18,7 +18,18 @@ parser.add_argument('-o', '--outfile', help='Output file',
                     type=argparse.FileType('w'), default=sys.stdout)
 parser.add_argument('-r', '--repeatcount', help='Number of repeat lectures',
                     type=int, default=17)
+parser.add_argument('-d', '--datefile', type=argparse.FileType('r'),
+                    help='JSON file with dates for two semesters')
 args = parser.parse_args()
+
+if args.datefile:
+    import json
+    dates = json.load(args.datefile)
+else:
+    import collections
+    dates = collections.defaultdict(lambda: args.startdate)
+
+#TODO: Use dates for creating output
 
 days = {'Ma/Mo': 0,
         'Di/Tu': 1,
