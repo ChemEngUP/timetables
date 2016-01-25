@@ -3,11 +3,9 @@
 import argparse
 import sqlite3
 import sys
-import json
 
-import pandas
-
-today = pandas.datetime.utcnow().date().isoformat()
+from datetime import datetime, timedelta
+today = datetime.utcnow().date().isoformat()
 
 parser = argparse.ArgumentParser("Create events for a subject")
 parser.add_argument("subject")
@@ -20,7 +18,7 @@ parser.add_argument('-r', '--repeatcount', help='Number of repeat lectures',
                     type=int, default=17)
 parser.add_argument('-d', '--datefile', type=argparse.FileType('r'),
                     help='JSON file with dates for two semesters')
-parser.add_argument('-c', '--discipline', default='%',
+parser.add_argument('-c', '--discipline',
                     help="Department code to match")
 args = parser.parse_args()
 
@@ -33,13 +31,19 @@ else:
 
 #TODO: Use dates for creating output
 
+def parsedate(datestr):
+    return datetime.strptime(datestr, "%Y-%m-%d")
+
+def parsedatetime(datetimestr):
+    return datetime.strptime(datetimestr, "%Y-%m-%dT%H:%M:%S")
+
 days = {'Ma/Mo': 0,
         'Di/Tu': 1,
         'Wo/We': 2,
         'Do/Th': 3,
         'Vr/Fr': 4}
 
-startdate = pandas.to_datetime(args.startdate)
+startdate = parsedate(args.startdate)
 
 c = sqlite3.connect('timetable.sqlite')
 
@@ -54,8 +58,8 @@ def timeformat(time):
 
 def eventtime(timestring, daystring):
     hours, minutes = map(int, timestring.split(":"))
-    return startdate + pandas.Timedelta(days=days[daystring],
-                                        hours=hours, minutes=minutes)
+    return startdate + timedelta(days=days[daystring],
+                                 hours=hours, minutes=minutes)
 
 events = []
 for subject, language, day, fromtime, totime, venue in result:
@@ -69,6 +73,7 @@ for subject, language, day, fromtime, totime, venue in result:
     events.append(d)
 
 if args.format == 'json':
+    import json
     json.dump(events, args.outfile)
 if args.format == 'ical':
     import icalendar
@@ -77,8 +82,8 @@ if args.format == 'ical':
         ievent = icalendar.Event()
         ievent.add('summary', event['summary'])
         ievent.add('location', venue)
-        ievent.add('dtstart', pandas.to_datetime(event['start']['dateTime']))
-        ievent.add('dtend', pandas.to_datetime(event['end']['dateTime']))
+        ievent.add('dtstart', parsedatetime(event['start']['dateTime']))
+        ievent.add('dtend', parsedatetime(event['end']['dateTime']))
         ievent.add('rrule', {'freq': 'weekly', 'count': args.repeatcount})
         cal.add_component(ievent)
     args.outfile.buffer.write(cal.to_ical())
