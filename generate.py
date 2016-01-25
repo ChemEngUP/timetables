@@ -19,6 +19,8 @@ parser.add_argument('--sendmail', help='Send a notification e-mail',
                     action="store_true", default=False)
 parser.add_argument('--debug', help='Print commands as they are written',
                     action="store_true", default=False)
+parser.add_argument('--quiet', help='Print less',
+                    action="store_true", default=False)
 parser.add_argument('filename', nargs="?", help='XLS file to parse for timetable')
 parser.add_argument('--nodiff', help="Don't do a diff on the files",
                     action="store_true", default=False)
@@ -27,15 +29,20 @@ parser.add_argument('--ignore', help='Ignore errors on system call',
 parser.add_argument('--calendar', action="store_true",
                     default=False,
                     help='Generate calendar entries')
+parser.add_argument('--parallel', action="store_true",
+                    default=False,
+                    help='Try to parallelise')
 args = parser.parse_args()
 
-logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO)
+logging.basicConfig(level=logging.DEBUG if args.debug
+                          else (logging.INFO if not args.quiet
+                                else logging.ERROR))
 
 queuedcommands = open('queue', 'w')
 
 def system(string, queue=False):
     logging.debug(string)
-    if queue:
+    if args.parallel and queue:
         queuedcommands.write(string + '\n')
         return 0
     else:
@@ -131,7 +138,10 @@ def index(string):
 def checkdifferences(countfile, dirname, lang1, lang2):
     result = os.path.join(dirname, "diff_" + lang1 + lang2 + ".html")
     logging.info("    checking difference between {} and {} ".format(lang1, lang2))
-    system(subdiff + " " + countfile + "." + lang1 + " " + countfile + "." + lang2 + " > " + result)
+    system(subdiff
+           + " " + countfile + "." + lang1
+           + " " + countfile + "." + lang2
+           + " > " + result, queue=True)
     index('<li>Differences between <a href="' + result + '">1=' + lang1 + ', 2=' + lang2+ '</a></li>')
 
 
@@ -218,7 +228,8 @@ for dept in depts:
             index( '<a href="' + dirname + '/' + stylename + '.pdf">' + stylename[:-4] + ' (pdf)</a>')
         else:
             outfilename = os.path.join(dirname, stylename + '.html')
-            system(' '.join(['xsltproc', '-o', outfilename, style, xmlfile]))
+            system(' '.join(['xsltproc',
+                             '-o', outfilename, style, xmlfile]), queue=True)
             index('<a href="' + dirname + '/' + stylename + '.html''">' + stylename + '</a>')
         index("</li>")
     index("</ol>")
@@ -250,6 +261,8 @@ system('parallel --bar < queue')
 #    system('pdftk ' + outputdir/*/$filename.pdf cat output $outputdir/all$filename.pdf
 
 index("</body></html>")
+
+indexfile.close()
 
 system("sed -i.bak 's," + outputdir + "/,,g' " + indexfilename)
 

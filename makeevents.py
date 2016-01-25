@@ -44,8 +44,8 @@ startdate = pandas.to_datetime(args.startdate)
 c = sqlite3.connect('timetable.sqlite')
 
 result = c.execute("select ModuleName, language, day, fromtime, totime, "
-                   "venue from timetable where modulename like ? and "
-                   "discipline like ?",
+                   "venue from timetable where modulename = ? and "
+                   "discipline = ?",
                    [args.subject, args.discipline])
 
 def timeformat(time):
