@@ -23,23 +23,23 @@ def timeformat(time):
     return {'dateTime': time.isoformat(),
             'timeZone': 'Africa/Johannesburg',}
 
-def eventtime(timestring, daystring):
+def eventtime(timestring, daystring, startdate):
     hours, minutes = map(int, timestring.split(":"))
     return startdate + timedelta(days=days[daystring],
                                  hours=hours, minutes=minutes)
 
-def readevents(subject, discipline, repeatcount):
+def readevents(subject, discipline, repeatcount, startdate):
     result = c.execute("select ModuleName, language, day, fromtime, totime, "
                        "venue from timetable where modulename = ? and "
                        "discipline = ?",
-                       [args.subject, args.discipline])
+                       [subject, discipline])
 
     events = []
     for subject, language, day, fromtime, totime, venue in result:
         d = {'summary': '{} {}'.format(subject, language),
              'location': venue,
-             'start': timeformat(eventtime(fromtime, day)),
-             'end': timeformat(eventtime(totime, day)),
+             'start': timeformat(eventtime(fromtime, day, startdate)),
+             'end': timeformat(eventtime(totime, day, startdate)),
              # see http://tools.ietf.org/html/rfc5545#section-3.8.6.2
              'recurrence': ['RRULE:FREQ=WEEKLY;COUNT={}'.format(repeatcount)],
              }
@@ -94,7 +94,8 @@ if __name__ == '__main__':
 
     startdate = parsedate(args.startdate)
 
-    events = readevents(args.subject, args.discipline, args.repeatcount)
+    events = readevents(args.subject, args.discipline,
+                        args.repeatcount, startdate)
 
     if args.format == 'json':
         events_to_json(events, args.outfile)

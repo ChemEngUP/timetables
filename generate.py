@@ -77,6 +77,8 @@ logging.info("Building database")
 import builddb
 builddb.build('fulltable.csv', 'timetable.sqlite')
 
+import makeevents
+
 if not args.nodiff:
     differ = difflib.HtmlDiff()
     diffs = differ.make_file(open(lastrunfilename), open(inputfilename),
@@ -234,7 +236,6 @@ for dept in depts:
         index("</li>")
     index("</ol>")
 
-    # FIXME: Shouldn't hardcode date - use dates.json
     if args.calendar:
         logging.info("Generating calendars")
         index("<h3>Subject calendars</h3>")
@@ -243,11 +244,11 @@ for dept in depts:
             shortsub = subject.replace(' ', '')
             subject = shortsub[:3] + ' ' + shortsub[3:]
             subfile = os.path.join(dirname, shortsub + '.ical')
-            system('./makeevents.py "{}"'
-                   ' -f ical '
-                   ' -s "2016-02-01"'
-                   ' -o {}'
-                   ' -c {}'.format(subject, subfile, dept), queue=True)
+            repeatcount = 17
+            # FIXME: Shouldn't hardcode date - use dates.json
+            events = makeevents.readevents(subject, dept, repeatcount,
+                                           makeevents.parsedate("2016-02-01"))
+            makeevents.events_to_ical(events, open(subfile, 'w'), repeatcount)
             index("<a href='{}' download>{}</a> ".format(subfile, shortsub))
 
     index("</div>")
