@@ -7,8 +7,7 @@ import os
 import re
 import itertools
 import glob
-import subprocess
-#from email.mime.text import MIMEText
+
 import email
 import smtplib
 import difflib
@@ -25,15 +24,24 @@ parser.add_argument('--nodiff', help="Don't do a diff on the files",
                     action="store_true", default=False)
 parser.add_argument('--ignore', help='Ignore errors on system call',
                     action='store_true', default=False)
+parser.add_argument('--calendar', action="store_true",
+                    default=False,
+                    help='Generate calendar entries')
 args = parser.parse_args()
 
 logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO)
 
-def system(string):
+queuedcommands = open('queue', 'w')
+
+def system(string, queue=False):
     logging.debug(string)
-    result = os.system(string)
-    if not args.ignore and result != 0:
-        raise Exception("Command processing error")
+    if queue:
+        queuedcommands.write(string + '\n')
+        return 0
+    else:
+        result = os.system(string)
+        if not args.ignore and result != 0:
+            raise Exception("Command processing error")
     return result
 
 datestr = str(datetime.datetime.now())
@@ -58,6 +66,7 @@ if args.filename:
 else:
     logging.info("Assuming same data as last time or other source of data")
 
+logging.info("Building database")
 import builddb
 builddb.build('fulltable.csv', 'timetable.sqlite')
 
@@ -72,13 +81,13 @@ if not args.nodiff:
 if args.sendmail:
     shutil.copy('mailhead.txt', 'mailbody.txt')
 
-    msg = email.MIMEMultipart.MIMEMultipart()
+    msg = email.mime.multipart.MIMEMultipart()
     msg['Subject'] = "Timetable regenerated"
     msg['From'] = "carl.sandrock@up.ac.za"
     msg['To'] = ','.join(i.strip() for i in open('maillist') if not i.startswith('#'))
-    msg.attach(email.MIMEText.MIMEText(open('mailbody.txt').read()))
+    msg.attach(email.mime.text.MIMEText(open('mailbody.txt').read()))
     if not args.nodiff:
-        attachmentpart = email.MIMEText.MIMEText(diffs, 'html')
+        attachmentpart = email.mime.text.MIMEText(diffs, 'html')
         attachmentpart.add_header('Content-Disposition', 'attachment; filename="diffs.html')
         msg.attach(attachmentpart)
 
@@ -204,7 +213,8 @@ for dept in depts:
             logging.info("   - calling LaTeX")
             # TODO: Handle LaTeX errors
             system('cd ' + dirname + ';pdflatex -interaction=nonstopmode ' +
-                   stylename + ' | grep "No pages" && false || true')
+                   stylename + ' | grep "No pages" && false || true',
+                   queue=True)
             index( '<a href="' + dirname + '/' + stylename + '.pdf">' + stylename[:-4] + ' (pdf)</a>')
         else:
             outfilename = os.path.join(dirname, stylename + '.html')
@@ -214,20 +224,24 @@ for dept in depts:
     index("</ol>")
 
     # FIXME: Shouldn't hardcode date - use dates.json
-    logging.info("Generating calendars")
-    index("<h3>Subject calendars</h3>")
-    for subject in sorted(set(open(subjectlist).read().splitlines())):
-        logging.info("  " + subject)
-        shortsub = subject.replace(' ', '')
-        subfile = os.path.join(dirname, shortsub + '.ical')
-        system('./makeevents.py "{}"'
-               ' -f ical '
-               ' -s "2016-02-01"'
-               ' -o {}'.format(subject, subfile))
-        index("<a href='{0}.ical'>{0}</a> ".format(shortsub))
+    if args.calendar:
+        logging.info("Generating calendars")
+        index("<h3>Subject calendars</h3>")
+        for subject in sorted(set(open(subjectlist).read().splitlines())):
+            logging.info("  " + subject)
+            shortsub = subject.replace(' ', '')
+            subject = shortsub[:3] + ' ' + shortsub[3:]
+            subfile = os.path.join(dirname, shortsub + '.ical')
+            system('./makeevents.py "{}"'
+                   ' -f ical '
+                   ' -s "2016-02-01"'
+                   ' -o {}'
+                   ' -c {}'.format(subject, subfile, dept), queue=True)
+            index("<a href='{}' download>{}</a> ".format(subfile, shortsub))
 
     index("</div>")
 
+system('parallel --bar < queue')
 
 #TODO: combined PDF output
 #logging.info("Combining pdf output for ...")

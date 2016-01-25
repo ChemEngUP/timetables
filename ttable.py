@@ -227,13 +227,13 @@ def readcsv(incsv, ignore, wanted, options):
             endtime = endtime[:-2] + '20'
         classtype = t["YearPhase"] # quarter/semester/year
         realname = sub
-        if classtype.startswith('K'): # quarter
+        if classtype.startswith('Q'): # quarter
             q = int(classtype[1])
             semester = (q-1) / 2 + 1
             sub = "Q%i: %s" % (q, sub)
         elif classtype.startswith('S'):
             semester = int(classtype[1])
-        elif classtype.startswith('J'):
+        elif classtype.startswith('Y'):
             semester = [1, 2]
 
         for sem in listify(semester):

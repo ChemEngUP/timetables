@@ -20,6 +20,8 @@ parser.add_argument('-r', '--repeatcount', help='Number of repeat lectures',
                     type=int, default=17)
 parser.add_argument('-d', '--datefile', type=argparse.FileType('r'),
                     help='JSON file with dates for two semesters')
+parser.add_argument('-c', '--discipline', default='%',
+                    help="Department code to match")
 args = parser.parse_args()
 
 if args.datefile:
@@ -41,7 +43,10 @@ startdate = pandas.to_datetime(args.startdate)
 
 c = sqlite3.connect('timetable.sqlite')
 
-result = c.execute("select ModuleName, language, day, fromtime, totime, venue from timetable where modulename like ?", [args.subject])
+result = c.execute("select ModuleName, language, day, fromtime, totime, "
+                   "venue from timetable where modulename like ? and "
+                   "discipline like ?",
+                   [args.subject, args.discipline])
 
 def timeformat(time):
     return {'dateTime': time.isoformat(),
@@ -71,6 +76,7 @@ if args.format == 'ical':
     for event in events:
         ievent = icalendar.Event()
         ievent.add('summary', event['summary'])
+        ievent.add('location', venue)
         ievent.add('dtstart', pandas.to_datetime(event['start']['dateTime']))
         ievent.add('dtend', pandas.to_datetime(event['end']['dateTime']))
         ievent.add('rrule', {'freq': 'weekly', 'count': args.repeatcount})
