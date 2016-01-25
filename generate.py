@@ -38,12 +38,14 @@ logging.basicConfig(level=logging.DEBUG if args.debug
                           else (logging.INFO if not args.quiet
                                 else logging.ERROR))
 
-queuedcommands = open('queue', 'w')
+queue1 = []
+queue2 = []
+queues = [queue1, queue2]
 
 def system(string, queue=False):
     logging.debug(string)
-    if args.parallel and queue:
-        queuedcommands.write(string + '\n')
+    if args.parallel and queue is not False:
+        queue.append(string + '\n')
         return 0
     else:
         result = os.system(string)
@@ -143,7 +145,7 @@ def checkdifferences(countfile, dirname, lang1, lang2):
     system(subdiff
            + " " + countfile + "." + lang1
            + " " + countfile + "." + lang2
-           + " > " + result, queue=True)
+           + " > " + result, queue=queue2)
     index('<li>Differences between <a href="' + result + '">1=' + lang1 + ', 2=' + lang2+ '</a></li>')
 
 
@@ -221,17 +223,18 @@ for dept in depts:
         logging.info("  creating " + stylename)
         if 'tex' in stylename:
             outfilename = os.path.join(dirname, stylename + '.tex')
-            system(' '.join(['xsltproc', '-o', outfilename, style, xmlfile]))
+            system(' '.join(['xsltproc', '-o', outfilename, style, xmlfile]),
+                   queue=queue1)
             logging.info("   - calling LaTeX")
             # TODO: Handle LaTeX errors
             system('cd ' + dirname + ';pdflatex -interaction=nonstopmode ' +
                    stylename + ' | grep "No pages" && false || true',
-                   queue=True)
+                   queue=queue2)
             index( '<a href="' + dirname + '/' + stylename + '.pdf">' + stylename[:-4] + ' (pdf)</a>')
         else:
             outfilename = os.path.join(dirname, stylename + '.html')
             system(' '.join(['xsltproc',
-                             '-o', outfilename, style, xmlfile]), queue=True)
+                             '-o', outfilename, style, xmlfile]), queue=queue2)
             index('<a href="' + dirname + '/' + stylename + '.html''">' + stylename + '</a>')
         index("</li>")
     index("</ol>")
@@ -253,7 +256,11 @@ for dept in depts:
 
     index("</div>")
 
-system('parallel --bar < queue')
+for queue in queues:
+    with open('queue', 'w') as f:
+        f.writelines(queue)
+    system('parallel --bar < queue')
+
 
 #TODO: combined PDF output
 #logging.info("Combining pdf output for ...")
