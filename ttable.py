@@ -310,7 +310,7 @@ def processentries(entries, mergedentries, responsible, personnel, options):
     geninfo = outputdoc.createElement("geninfo")
     geninfo.setAttribute('generator', 'ttable')
     geninfo.setAttribute('version', ver)
-    geninfo.setAttribute('date', time.strftime('%Y/%m/%d'))
+    geninfo.setAttribute('date', time.strftime('%Y-%m-%d'))
     geninfo.setAttribute('time', time.strftime('%H:%M'))
     geninfo.setAttribute('dept', options["deptident"])
     rootElement.appendChild(geninfo)
