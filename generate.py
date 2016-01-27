@@ -253,6 +253,8 @@ for dept in depts:
 
     index("</div>")
 
+queuedcommands.close()
+
 system('parallel --bar < queue')
 
 #TODO: combined PDF output
