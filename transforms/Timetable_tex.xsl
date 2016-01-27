@@ -24,6 +24,7 @@
   <xsl:param name="endperiod" select="10" />
   \printtitle{<xsl:value-of select="/timetable/geninfo/@dept"/> - Semester <xsl:value-of select="./@number"/> of <xsl:value-of select="/timetable/@year"/> (generated on <xsl:value-of select="/timetable/geninfo/@date"/> )} \\ 
   \printsubtitle{The most recent version of the time table is at \url{http://www1.up.ac.za/timetables/eng_timetable.html}} \\
+  \printsubtitle{This timetable can be downloaded from \url{http://chemeng.up.ac.za/timetables}} \\ 
   \fontsize{7pt}{2pt}\usefont{T1}{phv}{m}{n}
   \begin{tabular}{|ll|c|c|c|c|c|c|c|c|c|c|c}
     \hline
