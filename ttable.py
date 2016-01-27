@@ -329,7 +329,7 @@ def processentries(entries, mergedentries, responsible, personnel, options):
     yearsElement = outputdoc.createElement("years")
     rootElement.appendChild(yearsElement)
 
-    for semester in range(1, 3):
+    for semester in [1, 2]:
         semesterElement = outputdoc.createElement("semester")
         semesterElement.setAttribute("number", '%i' % semester)
         semestersElement.appendChild(semesterElement)
