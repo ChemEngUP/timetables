@@ -242,15 +242,16 @@ for dept in depts:
     if args.calendar:
         logging.info("Generating calendars")
         index("<h3>Subject calendars</h3>")
+        repeatcount = 17
+        parseddate = makeevents.parsedate("2016-02-01")
         for subject in sorted(set(open(subjectlist).read().splitlines())):
             logging.info("  " + subject)
             shortsub = subject.replace(' ', '')
             subject = shortsub[:3] + ' ' + shortsub[3:]
             subfile = os.path.join(dirname, shortsub + '.ical')
-            repeatcount = 17
             # FIXME: Shouldn't hardcode date - use dates.json
             events = makeevents.readevents(subject, dept, repeatcount,
-                                           makeevents.parsedate("2016-02-01"))
+                                           parseddate)
             makeevents.events_to_ical(events, open(subfile, 'w'), repeatcount)
             index("<a href='{}' download>{}</a> ".format(subfile, shortsub))
 
