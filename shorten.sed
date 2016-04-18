@@ -42,3 +42,4 @@ s,K2/Q2,Q2,g
 s,K3/Q3,Q3,g
 s,K4/Q4,Q4,g
 s,J/Y,Y,g
+s/[KQ]\([0-9]\) [EI]NG/Q\1/g
