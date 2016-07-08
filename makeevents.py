@@ -3,8 +3,6 @@
 import sqlite3
 from datetime import datetime, timedelta
 
-#TODO: Use dates for creating output
-
 def parsedate(datestr):
     return datetime.strptime(datestr, "%Y-%m-%d")
 
@@ -28,20 +26,24 @@ def eventtime(timestring, daystring, startdate):
     return startdate + timedelta(days=days[daystring],
                                  hours=hours, minutes=minutes)
 
-def readevents(subject, discipline, repeatcount, startdate):
+def readevents(subject, discipline):
     result = c.execute("select ModuleName, language, day, fromtime, totime, "
-                       "venue from timetable where modulename = ? and "
+                       "venue, startdate, repeatcount "
+                       "from timetable natural join dates "
+                       "where modulename = ? and "
                        "discipline = ?",
                        [subject, discipline])
 
     events = []
-    for subject, language, day, fromtime, totime, venue in result:
+    for subject, language, day, fromtime, totime, venue, startdate, repeatcount in result:
+        startdate = parsedate(startdate)
         d = {'summary': '{} {}'.format(subject, language),
              'location': venue,
              'start': timeformat(eventtime(fromtime, day, startdate)),
              'end': timeformat(eventtime(totime, day, startdate)),
              # see http://tools.ietf.org/html/rfc5545#section-3.8.6.2
              'recurrence': ['RRULE:FREQ=WEEKLY;COUNT={}'.format(repeatcount)],
+             'repeatcount': repeatcount,
              }
         events.append(d)
     return events
@@ -50,7 +52,7 @@ def events_to_json(events, outfile):
     import json
     json.dump(events, outfile)
 
-def events_to_ical(events, outfile, repeatcount):
+def events_to_ical(events, outfile):
     import icalendar
     cal = icalendar.Calendar()
     for event in events:
@@ -59,7 +61,7 @@ def events_to_ical(events, outfile, repeatcount):
         ievent.add('location', event['location'])
         ievent.add('dtstart', parsedatetime(event['start']['dateTime']))
         ievent.add('dtend', parsedatetime(event['end']['dateTime']))
-        ievent.add('rrule', {'freq': 'weekly', 'count': repeatcount})
+        ievent.add('rrule', {'freq': 'weekly', 'count': event['repeatcount']})
         cal.add_component(ievent)
     outfile.buffer.write(cal.to_ical())
     outfile.buffer.flush()
@@ -77,27 +79,13 @@ if __name__ == '__main__':
                          choices=['json', 'ical'])
     parser.add_argument('-o', '--outfile', help='Output file',
                         type=argparse.FileType('w'), default=sys.stdout)
-    parser.add_argument('-r', '--repeatcount', help='Number of repeat lectures',
-                        type=int, default=17)
-    parser.add_argument('-d', '--datefile', type=argparse.FileType('r'),
-                        help='JSON file with dates for two semesters')
     parser.add_argument('-c', '--discipline',
                         help="Department code to match")
     args = parser.parse_args()
 
-    if args.datefile:
-        import json
-        dates = json.load(args.datefile)
-    else:
-        import collections
-        dates = collections.defaultdict(lambda: args.startdate)
-
-    startdate = parsedate(args.startdate)
-
-    events = readevents(args.subject, args.discipline,
-                        args.repeatcount, startdate)
+    events = readevents(args.subject, args.discipline)
 
     if args.format == 'json':
         events_to_json(events, args.outfile)
     if args.format == 'ical':
-        events_to_ical(events, args.outfile, args.repeatcount)
+        events_to_ical(events, args.outfile)
