@@ -247,7 +247,7 @@ for dept in depts:
             logging.info("  " + subject)
             shortsub = subject.replace(' ', '')
             subject = shortsub[:3] + ' ' + shortsub[3:]
-            subfile = os.path.join(dirname, shortsub + '.ical')
+            subfile = os.path.join(dirname, shortsub + '.ics')
             events = makeevents.readevents(subject, dept)
             makeevents.events_to_ical(events, open(subfile, 'w'))
             index("<a href='{}' download>{}</a> ".format(subfile, shortsub))
