@@ -368,8 +368,8 @@ def processentries(entries, mergedentries, responsible, personnel, options):
                             moduleElement.setAttribute("venue", entry["venue"])
                             moduleElement.setAttribute("name", entry["module"])
                             moduleElement.setAttribute("language", entry["language"])
-                            if entry["module"] in responsible:
-                                moduleElement.setAttribute("responsible", responsible[entry["module"]][entry["language"]])
+                            if entry["realname"] in responsible:
+                                moduleElement.setAttribute("responsible", responsible[entry["realname"]][entry["language"]])
                             moduleElement.setAttribute("type", entry["session"][0])
                             dayElement.appendChild(moduleElement)
 
