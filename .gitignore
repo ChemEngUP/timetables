@@ -10,3 +10,4 @@ output.old
 olddata
 _darcs
 booklet
+*.pyc
