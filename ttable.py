@@ -43,6 +43,7 @@ Options
    -y, --year       specify year to be printed on the timetables
                     defaults to this year
    -l, --languagemerge Merge identical classes for A and E at same time to B
+    -e, --englishonly For module codes in this file, change E to B
 """)
     return None
 
@@ -74,8 +75,8 @@ def processoptions(argv):
     version information."""
 
     # keep options seperate, but reconstitute when calling getopt
-    optshort = ["h", "q", "v", "d", "V", "o:", "g:", "I", "c:", "y", "l"]
-    optlong = ["help", "quiet", "verbose", "debug", "version", "outfile=", "group=", "deptident=", "countfile=", "year=", "languagemerge"]
+    optshort = ["h", "q", "v", "d", "V", "o:", "g:", "I", "c:", "y", "l", "e"]
+    optlong = ["help", "quiet", "verbose", "debug", "version", "outfile=", "group=", "deptident=", "countfile=", "year=", "languagemerge", "englishonly="]
 
     try:
         opts, args = getopt.getopt(argv, \
@@ -113,6 +114,11 @@ def processoptions(argv):
             print(key, end=' ')
             if value: print('=', value)
             else: print('on')
+
+    if "englishonly" in options:
+        options["englishonly"] = set(open(options["englishonly"]).read().splitlines())
+    else:
+        options["englishonly"] = set()
 
     return options
 
@@ -238,10 +244,12 @@ def readcsv(incsv, ignore, wanted, options):
 
         for sem in listify(semester):
             #TODO: Make this cleanup more generic
-            deltable = {c: None for c in "`' (),"}
+            deltable = str.maketrans({c: None for c in "`' (),"})
             engcodes = t["ENGcode"].translate(deltable)
+            if 'debug' in options: print(engcodes)
             groups = engcodes[0::2]
             years = list(map(int, engcodes[1::2]))
+
             assert len(groups)==len(years), "Problem parsing ENGcode " + engcodes
             for group, year in set(zip(groups, years)):
                 entry = { 'module': sub,
@@ -259,6 +267,8 @@ def readcsv(incsv, ignore, wanted, options):
                 if wantmatch(entry, wanted) and not ignorematch(entry, ignore):
                     entries.append(entry)
                 if "debug" in options: print("matches", wanted, "but not", ignore)
+                if entry['realname'] in options["englishonly"]:
+                    entry['language'] = "B"
     if "debug" in options: print(entries)
 
     return entries

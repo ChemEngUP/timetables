@@ -62,12 +62,12 @@ lastrunfilename = 'fulltable_lastrun.csv'
 
 # regenerate fulltable if filename specified
 if args.filename:
-    filterchain = " | sed -f shorten.sed | ./extractcolumns.py --headerfile headers.txt --sort -o {}".format(inputfilename)
+    filterchain = " | dos2unix | sed -f shorten.sed | ./extractcolumns.py --headerfile headers.txt --sort -o {}".format(inputfilename)
 
     if os.path.exists(inputfilename):
         shutil.move(inputfilename, backupfilename)
 
-    system('xls2csv ' + args.filename + filterchain)
+    system('in2csv ' + args.filename + filterchain)
     system('cat extras.csv >> {}'.format(inputfilename))
     logging.info("Regenerated fulltable from " + args.filename)
     with open('datafilename', 'w') as datafilenamef:
@@ -75,9 +75,9 @@ if args.filename:
 else:
     logging.info("Assuming same data as last time or other source of data")
 
-logging.info("Building database")
-import builddb
-builddb.build('fulltable.csv', 'timetable.sqlite')
+# logging.info("Building database") 
+# import builddb
+# builddb.build('fulltable.csv', 'timetable.sqlite')
 
 import makeevents
 
@@ -188,6 +188,8 @@ for dept in depts:
               ' --group ' + dept +
               ' --deptident "' + name + '"'
               ' --year ' + datayear +
+              (' --debug' if args.debug else '') +
+              ' --englishonly englishonly.txt' +
               ' < {}'.format(inputfilename))
 
     logging.info("  Running checks")
