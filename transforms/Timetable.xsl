@@ -56,7 +56,7 @@
   <xsl:param name="startperiod" select="1" />
   <xsl:param name="endperiod" select="10" />
   <h2><xsl:value-of select="/timetable/geninfo/@dept"/> - Semester <xsl:value-of select="./@number"/> of <xsl:value-of select="/timetable/@year"/> (generated on <xsl:value-of select="/timetable/geninfo/@date"/> )</h2>
-  <p>Please note the most up to date version of the time table is always available from <a href="http://www1.up.ac.za/timetables/eng_timetable.html">the planning department</a></p>
+  <p>Download other timetables at <a href="http://chemeng.up.ac.za/timetables">http://chemeng.up.ac.za/timetables</a></p>
     <p>Click here to show or hide years:<button onclick="yearvis(1)">1</button> <button onclick="yearvis(2)">2</button> <button onclick="yearvis(3)">3</button> <button onclick="yearvis(4)">4</button> </p>
   <table class="year">
     <colgroup /><colgroup />
