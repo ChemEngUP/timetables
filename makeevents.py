@@ -2,12 +2,15 @@
 
 import sqlite3
 from datetime import datetime, timedelta
+import pytz
+
+tz = pytz.timezone('Africa/Johannesburg')
 
 def parsedate(datestr):
     return datetime.strptime(datestr, "%Y-%m-%d")
 
 def parsedatetime(datetimestr):
-    return datetime.strptime(datetimestr, "%Y-%m-%dT%H:%M:%S")
+    return tz.localize(datetime.strptime(datetimestr, "%Y-%m-%dT%H:%M:%S"))
 
 days = {'Ma/Mo': 0,
         'Di/Tu': 1,
