@@ -32,6 +32,9 @@ parser.add_argument('--calendar', action="store_true",
 parser.add_argument('--parallel', action="store_true",
                     default=False,
                     help='Try to parallelise')
+parser.add_argument('--differences', action="store_true",
+                    default=False,
+                    help='Generate differences pages')
 args = parser.parse_args()
 
 logging.basicConfig(level=logging.DEBUG if args.debug
@@ -75,9 +78,9 @@ if args.filename:
 else:
     logging.info("Assuming same data as last time or other source of data")
 
-# logging.info("Building database") 
-# import builddb
-# builddb.build('fulltable.csv', 'timetable.sqlite')
+logging.info("Building database")
+import builddb
+builddb.build('fulltable.csv', 'timetable.sqlite')
 
 import makeevents
 
@@ -207,14 +210,15 @@ for dept in depts:
     system('grep -f yearbook/subjects_' + dept + '*.txt yearbook/counts.txt > ' + countfile + '.yearbook')
 
     # compare
-    index("<h3>Differences</h3>")
-    index("<p>The timetable is compared for consistency between the Afrikaans and English classes as well as with the yearbook.  Click a link.</p>")
-    index("<ol>")
+    if args.differences:
+        index("<h3>Differences</h3>")
+        index("<p>The timetable is compared for consistency between the Afrikaans and English classes as well as with the yearbook.  Click a link.</p>")
+        index("<ol>")
 
-    for f1, f2 in itertools.combinations(['A', 'E', 'yearbook'], 2):
-        checkdifferences(countfile, dirname, f1, f2)
+        for f1, f2 in itertools.combinations(['A', 'E', 'yearbook'], 2):
+            checkdifferences(countfile, dirname, f1, f2)
 
-    index("</ol>")
+        index("</ol>")
 
     # Run transforms
     index("<h3>Tables</h3>")
