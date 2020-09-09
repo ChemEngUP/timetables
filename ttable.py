@@ -43,7 +43,7 @@ Options
    -y, --year       specify year to be printed on the timetables
                     defaults to this year
    -l, --languagemerge Merge identical classes for A and E at same time to B
-    -e, --englishonly For module codes in this file, change E to B
+    -b, --bilingual For module codes in this file, scedule two classes
 """)
     return None
 
@@ -75,8 +75,8 @@ def processoptions(argv):
     version information."""
 
     # keep options seperate, but reconstitute when calling getopt
-    optshort = ["h", "q", "v", "d", "V", "o:", "g:", "I", "c:", "y", "l", "e"]
-    optlong = ["help", "quiet", "verbose", "debug", "version", "outfile=", "group=", "deptident=", "countfile=", "year=", "languagemerge", "englishonly="]
+    optshort = ["h", "q", "v", "d", "V", "o:", "g:", "I", "c:", "y", "l", "b"]
+    optlong = ["help", "quiet", "verbose", "debug", "version", "outfile=", "group=", "deptident=", "countfile=", "year=", "languagemerge", "bilingual="]
 
     try:
         opts, args = getopt.getopt(argv, \
@@ -115,10 +115,10 @@ def processoptions(argv):
             if value: print('=', value)
             else: print('on')
 
-    if "englishonly" in options:
-        options["englishonly"] = set(open(options["englishonly"]).read().splitlines())
+    if "bilingual" in options:
+        options["bilingual"] = set(open(options["bilingual"]).read().splitlines())
     else:
-        options["englishonly"] = set()
+        options["bilingual"] = set()
 
     return options
 
@@ -267,7 +267,7 @@ def readcsv(incsv, ignore, wanted, options):
                 if wantmatch(entry, wanted) and not ignorematch(entry, ignore):
                     entries.append(entry)
                 if "debug" in options: print("matches", wanted, "but not", ignore)
-                if entry['realname'] in options["englishonly"]:
+                if entry['realname'] not in options["bilingual"]:
                     entry['language'] = "B"
     if "debug" in options: print(entries)
 
@@ -396,9 +396,10 @@ def countentries(entries):
             l = ["A", "E"]
         for lang in listify(l):
             ltype = entry["session"][0]
-            if ltype == "T":
+            if ltype in ("T", "D"):
                 ltype = "P"
-            assert ltype in ["L", "P", "O"], "Unknown lecture type encountered"
+            if ltype not in ["L", "P", "O"]:
+                raise ValueError(f"Unknown lecture type '{ltype}' encountered")
             key = (entry["realname"], ltype, lang)
             n = nperiods(entry["starttime"], entry["endtime"])
             if key in counts:
