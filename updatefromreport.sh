@@ -26,4 +26,15 @@ date +"report_"$year"_%Y%m%d" > datafilename
 
 dos2unix $target
 
-diff $target $lastrun
+if grep -q ',$' $target
+then
+    gsed -i '/,$/d' fulltable.csv
+    echo "Warning: Stripped out lines with no group assigned"
+fi
+
+if diff $target $lastrun 
+then
+    exit 1
+else
+    exit 0
+fi
