@@ -1,3 +1,5 @@
+all: update generate upload
+
 update:
 	./updatefromreport.sh
 
