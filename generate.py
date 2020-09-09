@@ -82,6 +82,13 @@ logging.info("Building database")
 import builddb
 builddb.build('fulltable.csv', 'timetable.sqlite')
 
+logging.info('Determining bilingual modules')
+import db
+bilinguals = db.bilingual_modules()
+
+with open('bilingual.txt', 'w') as f:
+    f.writelines('\n'.join(bilinguals))
+
 import makeevents
 
 if not args.nodiff:
@@ -192,7 +199,7 @@ for dept in depts:
               ' --deptident "' + name + '"'
               ' --year ' + datayear +
               (' --debug' if args.debug else '') +
-              ' --englishonly englishonly.txt' +
+              ' --bilingual bilingual.txt' +
               ' < {}'.format(inputfilename))
 
     logging.info("  Running checks")
