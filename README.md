@@ -1,3 +1,31 @@
+# Timetable generation tooling
+
+The files in this repository gather the tooling for generating timetables currently hosted at http://chemeng.up.ac.za/timetables
+
+## Prerequisites/installation
+
+Python requirements are captured in `environment.yml` which can be used to spin up a conda environment for the project:
+
+```
+conda env create -f environment.yml
+```
+
+Additional tools required:
+
+* GNU Make
+* rsync
+* sed
+* awk
+* xsltproc
+
+## Processing
+
+Normal processing steps involve running `make`. The default entry point will download the timetable data, process it and upload it to chemeng. Check the `Makefile` for details on running these processes separately.
+
+
+## Legacy documentation - old process
+
+
 To use this tool, the following things have to be in place:
 
 1. Timetable data
